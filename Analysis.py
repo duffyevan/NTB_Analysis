@@ -79,3 +79,7 @@ class HeatPumpAnalysis:
             ret += 1
         return ret
 
+
+
+# row = a.get_row(1)
+# point = row['02_Saus2']
