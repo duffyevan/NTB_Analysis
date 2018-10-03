@@ -42,8 +42,8 @@ def doubleInteripolation(constant1, constant2, table, numberOfRows):
             
     print(arrayI1Values)
 
-    thermoPointsMin = []
-    thermoPointsMax = []
+    thermoPointsMin = None
+    thermoPointsMax = None
     Tmin = constant1
     Tmax = constant1
 
@@ -54,31 +54,42 @@ def doubleInteripolation(constant1, constant2, table, numberOfRows):
         if(t <= constant1):
             if(Tmin == constant1):
                 Tmin = t
-                thermoPointsMin.append(thermoPoints)
+                thermoPointsMin = thermoPoints
 
             elif(Tmin <= t and t <= constant1):
                 Tmin = t
-                thermoPointsMin.append(thermoPoints)
+                thermoPointsMin = thermoPoints
 
         
         elif(t >= constant1):
                 if(Tmax == constant1):
                     Tmax = t
-                    thermoPointsMax.append(thermoPoints)
+                    thermoPointsMax = thermoPoints
 
                 elif(Tmin >= t and t >= constant1):
                     Tmax = t
-                    thermoPointsMax.append(thermoPoints)
+                    thermoPointsMax = thermoPoints
 
     print(thermoPointsMin)
     print(thermoPointsMax)
+    
+    p2 = interipolation(thermoPointsMin[1], float(thermoPointsMin[0]), constant1, thermoPointsMax[1], float(thermoPointsMax[0]))
+    t2 = constant1
+    h2 = interipolation(thermoPointsMin[1], thermoPointsMin[2], constant1, thermoPointsMax[1], thermoPointsMax[2])
+    s2 = constant2
+
+    # Result = (p2,t2,h2,s2)
+    # print("the result is" + str(Result))
+    return (p2,t2,h2,s2)
+
 
 
 
 superheat = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\R410a Superheated Table.txt")
 numberOfRows = len(superheat.get_col("Superheated Pressure"))
 print("Number of row =" + str(numberOfRows))
-doubleInteripolation(28.2, 1.925, superheat, numberOfRows)
+Result = doubleInteripolation(58.4, 1.8173, superheat, numberOfRows)
+print("the result is" + str(Result))
 
 
 
