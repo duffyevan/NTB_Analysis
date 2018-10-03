@@ -15,11 +15,11 @@ def doubleInteripolation(constant1, constant2, table, numberOfRows):
             print("Current Row is" + str(curretRow))
             print("nextRow Row is" + str(nextRow))
             curretRow = nextRow
-            nextRow = (currentRowNum + 1)
+            nextRow = table.get_row(currentRowNum + 1)
 
         else:
             curretRow = nextRow
-            nextRow = (currentRowNum + 1)
+            nextRow = table.get_row(currentRowNum + 1)
 
 
 
