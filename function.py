@@ -144,11 +144,21 @@ def state3_Calc(targetPressure, table, numberOfRows):
 def state2_Prime_Calc(thermalEnergy, powerConsumption, state1_Enthalpy, state3_Enthalpy):
     return ((thermalEnergy * state1_Enthalpy) - (powerConsumption * state3_Enthalpy))/(thermalEnergy - powerConsumption)
 
+
 def effencisyCalc(state1_Enthalpy, state2_Enthalpy, state2_Prime_Enthalpy, state3_Enthalpy):
     COP_I = (state2_Enthalpy - state3_Enthalpy)/(state2_Enthalpy - state1_Enthalpy)
     COP_A = (state2_Prime_Enthalpy - state3_Enthalpy)/(state2_Prime_Enthalpy - state1_Enthalpy)
     n_Compressor = (state2_Enthalpy - state1_Enthalpy)/(state2_Prime_Enthalpy - state1_Enthalpy)
     return (COP_I, COP_A, n_Compressor)
+
+
+def thermalEnergyCalc(flowrate, coldTemp, hotTemp, Cp):
+    f = flowrate * 0.017
+    c = coldTemp + 273.4
+    h = hotTemp + 273.4
+    
+    return (f * Cp * (h - c))
+
 
 
 saturated = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\R410a Saturated Table.txt")
@@ -167,7 +177,10 @@ print("The result for state 2 is: " + str(Result2))
 Result3 = state3_Calc(Result2[0], saturated, numberOfRows1)
 print("The result for state 3 is: " + str(Result3))
 
-Result2_Prime = state2_Prime_Calc(10.46, 3.664, Result1[2], Result3[2])
+ThermalEnergy = thermalEnergyCalc(27.8, 51.14, 56.43, 4.1855)
+print("The Thermal Energy is: " + str(ThermalEnergy))
+
+Result2_Prime = state2_Prime_Calc(ThermalEnergy, 3.664, Result1[2], Result3[2])
 print("The result for state 2 prime is: " + str(Result2_Prime))
 
 Profermance = effencisyCalc(Result1[2], Result2[2], Result2_Prime, Result3[2])
