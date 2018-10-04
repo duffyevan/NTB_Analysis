@@ -1,6 +1,6 @@
 from Analysis import HeatPumpAnalysis
 
-def interipolation(x1, y1, x2, x3, y3):
+def interpolation(x1, y1, x2, x3, y3):
     y2 = (((x2-x1)*(y3-y1))/(x3-x1))+y1
     return y2
 
@@ -33,8 +33,8 @@ def state2_Calc(targetTemp, targetEntropy, table, numberOfRows):
                     # print("Current Row is" + str(curretRow))
                     # print("nextRow Row is" + str(nextRow))
                     pI1 = curretRow["Superheated Pressure"]
-                    tI1 = interipolation(float(curretRow["Entropy "]), float(curretRow["Temprature"]), targetEntropy, float(nextRow["Entropy "]), float(nextRow["Temprature"]))
-                    hI1 = interipolation(float(curretRow["Entropy "]), float(curretRow["Enthalpy "]), targetEntropy, float(nextRow["Entropy "]), float(nextRow["Enthalpy "]))
+                    tI1 = interpolation(float(curretRow["Entropy "]), float(curretRow["Temprature"]), targetEntropy, float(nextRow["Entropy "]), float(nextRow["Temprature"]))
+                    hI1 = interpolation(float(curretRow["Entropy "]), float(curretRow["Enthalpy "]), targetEntropy, float(nextRow["Entropy "]), float(nextRow["Enthalpy "]))
                     arrayI1Values.append((pI1,tI1,hI1,targetEntropy))
 
             curretRow = nextRow
@@ -73,9 +73,9 @@ def state2_Calc(targetTemp, targetEntropy, table, numberOfRows):
     # print(thermoPointsMin)
     # print(thermoPointsMax)
     
-    p2 = interipolation(thermoPointsMin[1], float(thermoPointsMin[0]), targetTemp, thermoPointsMax[1], float(thermoPointsMax[0]))
+    p2 = interpolation(thermoPointsMin[1], float(thermoPointsMin[0]), targetTemp, thermoPointsMax[1], float(thermoPointsMax[0]))
     t2 = targetTemp
-    h2 = interipolation(thermoPointsMin[1], thermoPointsMin[2], targetTemp, thermoPointsMax[1], thermoPointsMax[2])
+    h2 = interpolation(thermoPointsMin[1], thermoPointsMin[2], targetTemp, thermoPointsMax[1], thermoPointsMax[2])
     s2 = targetEntropy
 
     # Result = (p2,t2,h2,s2)
@@ -108,10 +108,10 @@ def state1_Calc(targetTemp, table, numberOfRows):
             higherValuePoints = rowData
             break
 
-    pI1 = interipolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Pressure Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Pressure Gas"]))
+    pI1 = interpolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Pressure Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Pressure Gas"]))
     t = targetTemp
-    hI1 = interipolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Enthalpy Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Enthalpy Gas"]))
-    sI1 = interipolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Entropy Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Entropy Gas"]))
+    hI1 = interpolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Enthalpy Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Enthalpy Gas"]))
+    sI1 = interpolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Entropy Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Entropy Gas"]))
 
     return (pI1,t,hI1,sI1)
 
@@ -142,9 +142,9 @@ def state3_Calc(targetPressure, table, numberOfRows):
             break
 
     p = targetPressure
-    tI1 = interipolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Temprature"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Temprature"]))
-    hI1 = interipolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Enthalpy Liqid"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Enthalpy Liqid"]))
-    sI1 = interipolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Entropy Liquid"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Entropy Liquid"]))
+    tI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Temprature"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Temprature"]))
+    hI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Enthalpy Liqid"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Enthalpy Liqid"]))
+    sI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Entropy Liquid"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Entropy Liquid"]))
 
     return (p,tI1,hI1,sI1)
 
@@ -172,9 +172,9 @@ def state2_Prime_Calc(thermalEnergy, powerConsumption, state1_Enthalpy, state3_E
             if(((float(curretRow["Superheated Pressure"])) <= upperLimitTemp) and ((float(curretRow["Superheated Pressure"])) >= lowerLimitTemp)):
                 if(((float(curretRow["Enthalpy "])) <= h3) and ((float(nextRow["Enthalpy "])) >= h3)):
                     pI1 = curretRow["Superheated Pressure"]
-                    tI1 = interipolation(float(curretRow["Enthalpy "]), float(curretRow["Temprature"]), h3, float(nextRow["Enthalpy "]), float(nextRow["Temprature"]))
+                    tI1 = interpolation(float(curretRow["Enthalpy "]), float(curretRow["Temprature"]), h3, float(nextRow["Enthalpy "]), float(nextRow["Temprature"]))
                     hI1 = h3
-                    sI1 = interipolation(float(curretRow["Enthalpy "]), float(curretRow["Entropy "]), h3, float(nextRow["Enthalpy "]), float(nextRow["Entropy "]))
+                    sI1 = interpolation(float(curretRow["Enthalpy "]), float(curretRow["Entropy "]), h3, float(nextRow["Enthalpy "]), float(nextRow["Entropy "]))
                     arrayI1Values.append((pI1,tI1,hI1,sI1))
 
             curretRow = nextRow
@@ -210,9 +210,9 @@ def state2_Prime_Calc(thermalEnergy, powerConsumption, state1_Enthalpy, state3_E
                     thermoPointsMax = thermoPoints
     
     p2 = state3_Pressure
-    t2 = interipolation(float(thermoPointsMin[0]), float(thermoPointsMin[1]), float(state3_Pressure), float(thermoPointsMax[0]), float(thermoPointsMax[1]))
+    t2 = interpolation(float(thermoPointsMin[0]), float(thermoPointsMin[1]), float(state3_Pressure), float(thermoPointsMax[0]), float(thermoPointsMax[1]))
     h2 = h3
-    s2 = interipolation(float(thermoPointsMin[0]), thermoPointsMin[3], float(state3_Pressure), float(thermoPointsMax[0]), thermoPointsMax[3])
+    s2 = interpolation(float(thermoPointsMin[0]), thermoPointsMin[3], float(state3_Pressure), float(thermoPointsMax[0]), thermoPointsMax[3])
 
     return (p2,t2,h2,s2)
 
