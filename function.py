@@ -94,7 +94,11 @@ def state1_Calc(targetTemp, table, numberOfRows):
             i += 1
 
         elif(float(rowData["Temprature"]) == targetTemp):
-            return rowData
+            pI1 = float(rowData["Pressure Gas"])
+            t = targetTemp
+            hI1 = float(rowData["Enthalpy Gas"])
+            sI1 = float(rowData["Entropy Gas"])
+            return (pI1,t,hI1,sI1)
 
         elif(float(rowData["Temprature"]) < targetTemp):
             lowerValuePoints = rowData
@@ -123,7 +127,11 @@ def state3_Calc(targetPressure, table, numberOfRows):
             i += 1
 
         elif(float(rowData["Pressure Liquid"]) == targetPressure):
-            return rowData
+            pI1 = targetPressure
+            t = float(rowData["Temprature"])
+            hI1 = float(rowData["Enthalpy Liqid"])
+            sI1 = float(rowData["Entropy Liquid"])
+            return (pI1,t,hI1,sI1)
 
         elif(float(rowData["Pressure Liquid"]) < targetPressure):
             lowerValuePoints = rowData
@@ -203,7 +211,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
             arrayResults.append((preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, dateTime, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condensorTemp, evaporatorTemp))
 
             i +=1
-            
+
         else:
             i +=1
 
@@ -222,10 +230,10 @@ print(Results)
 # numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
 
 
-# Result1 = state1_Calc(-0.7, saturated, numberOfRows1)
+# Result1 = state1_Calc(-1.0, saturated, numberOfRows1)
 # print("The result for state 1 is: " + str(Result1))
 
-# Result2 = state2_Calc(71.14, Result1[3], superheat, numberOfRows2)
+# Result2 = state2_Calc(64.04, Result1[3], superheat, numberOfRows2)
 # print("The result for state 2 is: " + str(Result2))
 
 # Result3 = state3_Calc(Result2[0], saturated, numberOfRows1)
