@@ -149,10 +149,7 @@ def state3_Calc(targetPressure, table, numberOfRows):
     return (p,tI1,hI1,sI1)
 
 
-def state2_Prime_Calc(thermalEnergy, powerConsumption, state1_Enthalpy, state3_Enthalpy):
-    return ((thermalEnergy * state1_Enthalpy) - (powerConsumption * state3_Enthalpy))/(thermalEnergy - powerConsumption)
-
-def state2_Prime_Calc2(thermalEnergy, powerConsumption, state1_Enthalpy, state3_Enthalpy, state3_Pressure, table, numberOfRows):
+def state2_Prime_Calc(thermalEnergy, powerConsumption, state1_Enthalpy, state3_Enthalpy, state3_Pressure, table, numberOfRows):
     h3 = ((thermalEnergy * state1_Enthalpy) - (powerConsumption * state3_Enthalpy))/(thermalEnergy - powerConsumption)
 
     arrayI1Values = []
@@ -183,7 +180,6 @@ def state2_Prime_Calc2(thermalEnergy, powerConsumption, state1_Enthalpy, state3_
             curretRow = nextRow
             nextRow = table.get_row(currentRowNum + 1)
             
-    print(arrayI1Values)
 
     thermoPointsMin = None
     thermoPointsMax = None
@@ -212,18 +208,14 @@ def state2_Prime_Calc2(thermalEnergy, powerConsumption, state1_Enthalpy, state3_
                 elif(Pmin >= p and p >= state3_Pressure):
                     Pmax = p
                     thermoPointsMax = thermoPoints
-
-    print(thermoPointsMin)
-    print(thermoPointsMax)
     
     p2 = state3_Pressure
     t2 = interipolation(float(thermoPointsMin[0]), float(thermoPointsMin[1]), float(state3_Pressure), float(thermoPointsMax[0]), float(thermoPointsMax[1]))
     h2 = h3
     s2 = interipolation(float(thermoPointsMin[0]), thermoPointsMin[3], float(state3_Pressure), float(thermoPointsMax[0]), thermoPointsMax[3])
 
-    Result = (p2,t2,h2,s2)
-    print("the result is" + str(Result))
-    # return (p2,t2,h2,s2)
+    return (p2,t2,h2,s2)
+
 
 def effencisyCalc(state1_Enthalpy, state2_Enthalpy, state2_Prime_Enthalpy, state3_Enthalpy):
     COP_I = (state2_Enthalpy - state3_Enthalpy)/(state2_Enthalpy - state1_Enthalpy)
@@ -277,8 +269,8 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
             state2_Result = state2_Calc(condensorTemp, state1_Result[3], superheat, numberOfRows2)
             state3_Result = state3_Calc(state2_Result[0], saturated, numberOfRows1)
             state4_Result = (state1_Result[0], state1_Result[1], state3_Result[0], "Not Found")
-            state2_Prime_Result = state2_Prime_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
-            preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result, state3_Result[2])
+            state2_Prime_Result = state2_Prime_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2], state3_Result[0], superheat, numberOfRows2)
+            preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
 
             arrayResults.append((preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, dateTime, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condensorTemp, evaporatorTemp))
 
@@ -292,13 +284,8 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
 
 
 
-superheat = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
-numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
-
-state2_Prime_Calc2(10.16, 3.06, 422.2, 274.8, 2662.4, superheat, numberOfRows2)
-
-# Results = dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
-# print(Results)
+Results = dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
+print(Results)
 
     # saturated = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturated Table.txt")
     # numberOfRows1 = len(saturated.get_col("Temprature"))
@@ -319,7 +306,7 @@ state2_Prime_Calc2(10.16, 3.06, 422.2, 274.8, 2662.4, superheat, numberOfRows2)
     # ThermalEnergy = thermalEnergyCalc(27.8, 51.14, 56.43, 4.1855)
     # print("The Thermal Energy is: " + str(ThermalEnergy))
 
-    # Result2_Prime = state2_Prime_Calc(ThermalEnergy, 3.664, Result1[2], Result3[2])
+    # Result2_Prime = state2_Prime_Calc2(10.16, 3.06, 422.2, 274.8, 2662.4, superheat, numberOfRows2)
     # print("The result for state 2 prime is: " + str(Result2_Prime))
 
     # Profermance = effencisyCalc(Result1[2], Result2[2], Result2_Prime, Result3[2])
