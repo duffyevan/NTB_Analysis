@@ -1,4 +1,4 @@
-Temprature	Pressure Liquid	Pressure Gas	Enthalpy Liqid	Enthalpy Gas	Entropy Liquid	Entropy Gas
+Temperature	Pressure Liquid	Pressure Gas	Enthalpy Liquid	Enthalpy Gas	Entropy Liquid	Entropy Gas
 -100.0000	3.8000	3.7000	63.3000	374.7000	0.3789	2.1774
 -99.0000	4.1000	4.1000	64.5000	375.3000	0.3857	2.1703
 -98.0000	4.5000	4.4000	65.7000	375.8000	0.3925	2.1633

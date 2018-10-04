@@ -1,4 +1,4 @@
-Superheated Pressure	Temprature	Volume	Enthalpy 	Entropy 
+Superheated Pressure	Temperature	Volume	Enthalpy	Entropy
 750.0000	0.0000	0.0351	424.1000	1.8260
 750.0000	5.0000	0.0363	429.4000	1.8454
 750.0000	10.0000	0.0375	434.6000	1.8641
