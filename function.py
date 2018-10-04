@@ -160,31 +160,85 @@ def thermalEnergyCalc(flowrate, coldTemp, hotTemp, Cp):
     return (f * Cp * (h - c))
 
 
+def dataCalc(dataSheet, saturatedTable, superHeatedTable):
+    rawData = HeatPumpAnalysis(dataSheet)
+    numberOfRows = len(rawData.get_col("Datum/Winterzeit"))
+    print("number of rows in data sheet = " + str(numberOfRows))
 
-saturated = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\R410a Saturated Table.txt")
-numberOfRows1 = len(saturated.get_col("Temprature"))
+    saturated = HeatPumpAnalysis(saturatedTable)
+    numberOfRows1 = len(saturated.get_col("Temprature"))
+    print("number of rows in saturated table = " + str(numberOfRows1))
 
-superheat = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\R410a Superheated Table.txt")
-numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
-# print("Number of row =" + str(numberOfRows))
+    superheat = HeatPumpAnalysis(superHeatedTable)
+    numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
+    print("number of rows in supersaturated table = " + str(numberOfRows2))
 
-Result1 = state1_Calc(-0.7, saturated, numberOfRows1)
-print("The result for state 1 is: " + str(Result1))
+    HeatCapacityOfWater = 4.1855
+    arrayResults = []
 
-Result2 = state2_Calc(71.14, Result1[3], superheat, numberOfRows2)
-print("The result for state 2 is: " + str(Result2))
+    i=0
+    while(i < numberOfRows):
+        curretRow = rawData.get_row(i)
+        
+        if("d10010001" == curretRow["47_Dig"]):
+            dateTime = curretRow["Datum/Winterzeit"]
+            print(dateTime)
+            waterInletTemp = float(curretRow["03_Sein1"])/100
+            condensorTemp = waterInletTemp + 20
+            waterOutletTemp = float(curretRow["09_Aaus1"])/100
+            waterFlowRate = float(curretRow["22_Vaufl"])/60
+            airInletTemp = float(curretRow["07_Qein1"])/100
+            evaporatorTemp = airInletTemp - 20
+            compressorPower = float(curretRow["27_PelV"])/1000
+            
+            ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
+            
+            state1_Result = state1_Calc(evaporatorTemp, saturated, numberOfRows1)
+            state2_Result = state2_Calc(condensorTemp, state1_Result[3], superheat, numberOfRows2)
+            state3_Result = state3_Calc(state2_Result[0], saturated, numberOfRows1)
+            state4_Result = (state1_Result[0], state1_Result[1], state3_Result[0], "Not Found")
+            state2_Prime_Result = state2_Prime_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
+            preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result, state3_Result[2])
 
-Result3 = state3_Calc(Result2[0], saturated, numberOfRows1)
-print("The result for state 3 is: " + str(Result3))
+            arrayResults.append((preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, dateTime, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condensorTemp, evaporatorTemp))
 
-ThermalEnergy = thermalEnergyCalc(27.8, 51.14, 56.43, 4.1855)
-print("The Thermal Energy is: " + str(ThermalEnergy))
+            i +=1
+            
+        else:
+            i +=1
 
-Result2_Prime = state2_Prime_Calc(ThermalEnergy, 3.664, Result1[2], Result3[2])
-print("The result for state 2 prime is: " + str(Result2_Prime))
+    return arrayResults
 
-Profermance = effencisyCalc(Result1[2], Result2[2], Result2_Prime, Result3[2])
-print("The profermance is a follows: Ideal COP = " + str(Profermance[0]) + ", Actual COP = " + str(Profermance[1]) + ", Isentropic Efficiency for Comprosser = " + str(Profermance[2]))
+
+
+
+Results = dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
+print(Results)
+
+# saturated = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturated Table.txt")
+# numberOfRows1 = len(saturated.get_col("Temprature"))
+
+# superheat = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
+# numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
+
+
+# Result1 = state1_Calc(-0.7, saturated, numberOfRows1)
+# print("The result for state 1 is: " + str(Result1))
+
+# Result2 = state2_Calc(71.14, Result1[3], superheat, numberOfRows2)
+# print("The result for state 2 is: " + str(Result2))
+
+# Result3 = state3_Calc(Result2[0], saturated, numberOfRows1)
+# print("The result for state 3 is: " + str(Result3))
+
+# ThermalEnergy = thermalEnergyCalc(27.8, 51.14, 56.43, 4.1855)
+# print("The Thermal Energy is: " + str(ThermalEnergy))
+
+# Result2_Prime = state2_Prime_Calc(ThermalEnergy, 3.664, Result1[2], Result3[2])
+# print("The result for state 2 prime is: " + str(Result2_Prime))
+
+# Profermance = effencisyCalc(Result1[2], Result2[2], Result2_Prime, Result3[2])
+# print("The profermance is a follows: Ideal COP = " + str(Profermance[0]) + ", Actual COP = " + str(Profermance[1]) + ", Isentropic Efficiency for Comprosser = " + str(Profermance[2]))
 
 
 
