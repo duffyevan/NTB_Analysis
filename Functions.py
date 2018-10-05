@@ -126,6 +126,8 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
             curretRow = nextRow
             nextRow = table.get_row(currentRowNum + 1)
 
+    # print(arrayI1Values)
+
     thermoPointsMin = None
     thermoPointsMax = None
     C1min = float(constantVal1)
@@ -166,6 +168,10 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
                     elif(C1min >= C and C >= float(constantVal1)):
                         C1max = C
                         thermoPointsMax = thermoPoints
+
+    # print(thermoPointsMin)
+    # print(thermoPointsMax)
+
 
     if(constantVal2Title == "Superheated Pressure"):
         pI2 = float(constantVal2)
@@ -211,6 +217,8 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
     else:
         sI2 = interpolation(float(thermoPointsMin[2]), float(thermoPointsMin[3]), float(constantVal1), float(thermoPointsMax[2]), float(thermoPointsMax[3]))
 
+    # Result = (pI2,tI2,hI2,sI2)
+    # print("the result is" + str(Result))
     return (pI2,tI2,hI2,sI2)
 
 
@@ -253,7 +261,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
         
         if("d10010001" == curretRow["47_Dig"]):
             dateTime = curretRow["Datum/Winterzeit"]
-            print(dateTime)
+            # print(dateTime)
             waterInletTemp = float(curretRow["03_Sein1"])/100
             condenserTemp = waterInletTemp + 20
             waterOutletTemp = float(curretRow["09_Aaus1"])/100
@@ -263,16 +271,23 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
             compressorPower = float(curretRow["27_PelV"])/1000
             
             ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
-            
-            state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Gas", saturated, numberOfRows1)
-            state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy", 10, superheat, numberOfRows2)
-            state3_Result = singleInterpolation(state2_Result[0], "Pressure Liquid", "Liquid", saturated, numberOfRows1)
-            state4_Result = (state1_Result[0], state1_Result[1], state3_Result[0], "Not Found")
-            state2_Prime_Enthalpy = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
-            state2_Prime_Result = doubleInterpolation(state3_Result[0], "Superheated Pressure", state2_Prime_Enthalpy, "Enthalpy", 200, superheat, numberOfRows2)
-            preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
+            # print("The Thermal Energy is: " + str(ThermalEnergy))
+            if(ThermalEnergy > 0):
+                state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Gas", saturated, numberOfRows1)
+                # print("The result for state 1 is: " + str(state1_Result))
+                state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy", 10, superheat, numberOfRows2)
+                # print("The result for state 2 is: " + str(state2_Result))
+                state3_Result = singleInterpolation(state2_Result[0], "Pressure Liquid", "Liquid", saturated, numberOfRows1)
+                # print("The result for state 3 is: " + str(state3_Result))
+                state4_Result = (state1_Result[0], state1_Result[1], state3_Result[0], "Not Found")
+                state2_Prime_Enthalpy = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
+                if(state2_Prime_Enthalpy > state2_Result[2] and state2_Prime_Enthalpy <= 560):
+                # print("The result for state 2 prime enthalpy is: " + str(state2_Prime_Enthalpy))
+                    state2_Prime_Result = doubleInterpolation(state3_Result[0], "Superheated Pressure", state2_Prime_Enthalpy, "Enthalpy", 200, superheat, numberOfRows2)
+                # print("The result for state 2 prime is: " + str(state2_Prime_Result))
+                    preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
 
-            arrayResults.append((preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, dateTime, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
+                    arrayResults.append((preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, dateTime, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
 
             i +=1
 
@@ -283,27 +298,8 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
 
 
 
-Results = dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
+Results = dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
 print(Results)
-
-
-
-
-
-
-
-
-
-
-
-
-# superheat = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
-# numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
-# saturated = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt")
-# numberOfRows1 = len(saturated.get_col("Temperature"))
-# doubleInterpolation(2662.4, "Superheated Pressure", 485.8, "Enthalpy", 200, superheat, numberOfRows2)
-# Result2 = singleInterpolation(-0.7, "Temperature", "Gas", saturated, numberOfRows1)
-# print("The result for state 2 is: " + str(Result2))
 
 
 
