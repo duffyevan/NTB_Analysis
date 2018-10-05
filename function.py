@@ -91,36 +91,36 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
         currentRowNum += 1
 
         if(float(curretRow[constantVal1Title]) == float(constantVal1) and float(curretRow[constantVal2Title]) == float(constantVal2)):
-            pI1 = float(curretRow["Superheated Pressure"])
+            pI1 = float(curretRow["Pressure Vapor"])
             tI1 = float(curretRow["Temperature"])
-            hI1 = float(curretRow["Enthalpy"])
-            sI1 = float(curretRow["Entropy"])
+            hI1 = float(curretRow["Enthalpy Vapor"])
+            sI1 = float(curretRow["Entropy Vapor"])
             return (pI1,tI1,hI1,sI1)
 
         #Check to see if there is a pressure change and if so, set the current and next rows to the next ones
-        if(curretRow["Superheated Pressure"] != nextRow["Superheated Pressure"]):
+        if(curretRow["Pressure Vapor"] != nextRow["Pressure Vapor"]):
             curretRow = nextRow
             nextRow = table.get_row(currentRowNum + 1)
 
         else:
             if(((float(curretRow[constantVal1Title])) <= upperLimit) and ((float(curretRow[constantVal1Title])) >= lowerLimit)):
                 if(((float(curretRow[constantVal2Title])) <= float(constantVal2)) and ((float(nextRow[constantVal2Title])) >= float(constantVal2))):
-                    pI1 = float(curretRow["Superheated Pressure"])
+                    pI1 = float(curretRow["Pressure Vapor"])
 
                     if(constantVal2Title == "Temperature"):
                         tI1 = float(constantVal2)
                     else:
                         tI1 = interpolation(float(curretRow[constantVal2Title]), float(curretRow["Temperature"]), float(constantVal2), float(nextRow[constantVal2Title]), float(nextRow["Temperature"]))
 
-                    if(constantVal2Title == "Enthalpy"):
+                    if(constantVal2Title == "Enthalpy Vapor"):
                         hI1 = float(constantVal2)
                     else:
-                        hI1 = interpolation(float(curretRow[constantVal2Title]), float(curretRow["Enthalpy"]), float(constantVal2), float(nextRow[constantVal2Title]), float(nextRow["Enthalpy"]))
+                        hI1 = interpolation(float(curretRow[constantVal2Title]), float(curretRow["Enthalpy Vapor"]), float(constantVal2), float(nextRow[constantVal2Title]), float(nextRow["Enthalpy Vapor"]))
 
-                    if(constantVal2Title == "Entropy"):
+                    if(constantVal2Title == "Entropy Vapor"):
                         sI1 = float(constantVal2)
                     else:
-                        sI1 = interpolation(float(curretRow[constantVal2Title]), float(curretRow["Entropy"]), float(constantVal2), float(nextRow[constantVal2Title]), float(nextRow["Entropy"]))
+                        sI1 = interpolation(float(curretRow[constantVal2Title]), float(curretRow["Entropy Vapor"]), float(constantVal2), float(nextRow[constantVal2Title]), float(nextRow["Entropy Vapor"]))
                     
                     arrayI1Values.append((pI1,tI1,hI1,sI1))
 
@@ -139,16 +139,16 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
         for i in range(0, len(arrayI1Values)):
             thermoPoints = arrayI1Values[i]
 
-            if(constantVal1Title == "Superheated Pressure"):
+            if(constantVal1Title == "Pressure Vapor"):
                 C =  float(thermoPoints[0])
 
             if(constantVal1Title == "Temperature"):
                 C =  float(thermoPoints[1])
             
-            if(constantVal1Title == "Enthalpy"):
+            if(constantVal1Title == "Enthalpy Vapor"):
                 C =  float(thermoPoints[2])
             
-            if(constantVal1Title == "Entropy"):
+            if(constantVal1Title == "Entropy Vapor"):
                 C =  float(thermoPoints[3])
 
             if(C <= float(constantVal1)):
@@ -174,13 +174,13 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
     # print(thermoPointsMax)
 
 
-    if(constantVal2Title == "Superheated Pressure"):
+    if(constantVal2Title == "Pressure Vapor"):
         pI2 = float(constantVal2)
-    elif(constantVal1Title == "Superheated Pressure"):
+    elif(constantVal1Title == "Pressure Vapor"):
         pI2 = float(constantVal1)
     elif(constantVal1Title == "Temperature"):
         pI2 = interpolation(float(thermoPointsMin[1]), float(thermoPointsMin[0]), float(constantVal1), float(thermoPointsMax[1]), float(thermoPointsMax[0]))
-    elif(constantVal1Title == "Enthalpy"):
+    elif(constantVal1Title == "Enthalpy Vapor"):
         pI2 = interpolation(float(thermoPointsMin[2]), float(thermoPointsMin[0]), float(constantVal1), float(thermoPointsMax[2]), float(thermoPointsMax[0]))
     else:
         pI2 = interpolation(float(thermoPointsMin[3]), float(thermoPointsMin[0]), float(constantVal1), float(thermoPointsMax[3]), float(thermoPointsMax[0]))
@@ -189,29 +189,29 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
         tI2 = float(constantVal2)
     elif(constantVal1Title == "Temperature"):
         tI2 = float(constantVal1)
-    elif(constantVal1Title == "Superheated Pressure"):
+    elif(constantVal1Title == "Pressure Vapor"):
         tI2 = interpolation(float(thermoPointsMin[0]), float(thermoPointsMin[1]), float(constantVal1), float(thermoPointsMax[0]), float(thermoPointsMax[1]))
-    elif(constantVal1Title == "Enthalpy"):
+    elif(constantVal1Title == "Enthalpy Vapor"):
         tI2 = interpolation(float(thermoPointsMin[2]), float(thermoPointsMin[1]), float(constantVal1), float(thermoPointsMax[2]), float(thermoPointsMax[1]))
     else:
         tI2 = interpolation(float(thermoPointsMin[3]), float(thermoPointsMin[1]), float(constantVal1), float(thermoPointsMax[3]), float(thermoPointsMax[1]))
 
-    if(constantVal2Title == "Enthalpy"):
+    if(constantVal2Title == "Enthalpy Vapor"):
         hI2 = float(constantVal2)
-    elif(constantVal1Title == "Enthalpy"):
+    elif(constantVal1Title == "Enthalpy Vapor"):
         hI2 = float(constantVal1)
-    elif(constantVal1Title == "Superheated Pressure"):
+    elif(constantVal1Title == "Pressure Vapor"):
         hI2 = interpolation(float(thermoPointsMin[0]), float(thermoPointsMin[2]), float(constantVal1), float(thermoPointsMax[0]), float(thermoPointsMax[2]))
     elif(constantVal1Title == "Temperature"):
         hI2 = interpolation(float(thermoPointsMin[1]), float(thermoPointsMin[2]), float(constantVal1), float(thermoPointsMax[1]), float(thermoPointsMax[2]))
     else:
         hI2 = interpolation(float(thermoPointsMin[3]), float(thermoPointsMin[2]), float(constantVal1), float(thermoPointsMax[3]), float(thermoPointsMax[2]))
 
-    if(constantVal2Title == "Entropy"):
+    if(constantVal2Title == "Entropy Vapor"):
         sI2 = float(constantVal2)
-    elif(constantVal1Title == "Entropy"):
+    elif(constantVal1Title == "Entropy Vapor"):
         sI2 = float(constantVal1)
-    elif(constantVal1Title == "Superheated Pressure"):
+    elif(constantVal1Title == "Pressure Vapor"):
         sI2 = interpolation(float(thermoPointsMin[0]), float(thermoPointsMin[3]), float(constantVal1), float(thermoPointsMax[0]), float(thermoPointsMax[3]))
     elif(constantVal1Title == "Temperature"):
         sI2 = interpolation(float(thermoPointsMin[1]), float(thermoPointsMin[3]), float(constantVal1), float(thermoPointsMax[1]), float(thermoPointsMax[3]))
@@ -251,7 +251,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
     numberOfRows1 = len(saturated.get_col("Temperature"))
 
     superheat = HeatPumpAnalysis(superHeatedTable)
-    numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
+    numberOfRows2 = len(superheat.get_col("Temperature"))
 
     HeatCapacityOfWater = 4.1855
     arrayResults = []
@@ -272,13 +272,13 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
             
             ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
             if(ThermalEnergy > 0):
-                state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Gas", saturated, numberOfRows1)
-                state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy", 10, superheat, numberOfRows2)
+                state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
+                state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy Vapor", 10, superheat, numberOfRows2)
                 state3_Result = singleInterpolation(state2_Result[0], "Pressure Liquid", "Liquid", saturated, numberOfRows1)
                 state4_Result = (state1_Result[0], state1_Result[1], state3_Result[2], "Not Found")
                 state2_Prime_Enthalpy = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
                 if(state2_Prime_Enthalpy > state2_Result[2] and state2_Prime_Enthalpy <= 560):
-                    state2_Prime_Result = doubleInterpolation(state3_Result[0], "Superheated Pressure", state2_Prime_Enthalpy, "Enthalpy", 200, superheat, numberOfRows2)
+                    state2_Prime_Result = doubleInterpolation(state3_Result[0], "Pressure Vapor", state2_Prime_Enthalpy, "Enthalpy Vapor", 200, superheat, numberOfRows2)
                     preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
                     arrayResults.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
             i +=1
@@ -307,8 +307,4 @@ def printToExcel(arrayOfResults, destination, fileName):
 
 
 
-dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table -1.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table -1.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output.xls")
-
-
-
-
+dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output.xls")
