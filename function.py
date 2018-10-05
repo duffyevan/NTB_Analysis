@@ -27,14 +27,14 @@ def state2_Calc(targetTemp, targetEntropy, table, numberOfRows):
             nextRow = table.get_row(currentRowNum + 1)
 
         else:
-            if(((float(curretRow["Temprature"])) <= upperLimitTemp) and ((float(curretRow["Temprature"])) >= lowerLimitTemp)):
+            if(((float(curretRow["Temperature"])) <= upperLimitTemp) and ((float(curretRow["Temperature"])) >= lowerLimitTemp)):
                 # print("Current Row is" + str(curretRow))
-                if(((float(curretRow["Entropy "])) <= targetEntropy) and ((float(nextRow["Entropy "])) >= targetEntropy)):
+                if(((float(curretRow["Entropy"])) <= targetEntropy) and ((float(nextRow["Entropy"])) >= targetEntropy)):
                     # print("Current Row is" + str(curretRow))
                     # print("nextRow Row is" + str(nextRow))
                     pI1 = curretRow["Superheated Pressure"]
-                    tI1 = interpolation(float(curretRow["Entropy "]), float(curretRow["Temprature"]), targetEntropy, float(nextRow["Entropy "]), float(nextRow["Temprature"]))
-                    hI1 = interpolation(float(curretRow["Entropy "]), float(curretRow["Enthalpy "]), targetEntropy, float(nextRow["Entropy "]), float(nextRow["Enthalpy "]))
+                    tI1 = interpolation(float(curretRow["Entropy"]), float(curretRow["Temperature"]), targetEntropy, float(nextRow["Entropy"]), float(nextRow["Temperature"]))
+                    hI1 = interpolation(float(curretRow["Entropy"]), float(curretRow["Enthalpy"]), targetEntropy, float(nextRow["Entropy"]), float(nextRow["Enthalpy"]))
                     arrayI1Values.append((pI1,tI1,hI1,targetEntropy))
 
             curretRow = nextRow
@@ -93,25 +93,25 @@ def state1_Calc(targetTemp, table, numberOfRows):
             lowerValuePoints = rowData
             i += 1
 
-        elif(float(rowData["Temprature"]) == targetTemp):
+        elif(float(rowData["Temperature"]) == targetTemp):
             pI1 = float(rowData["Pressure Gas"])
             t = targetTemp
             hI1 = float(rowData["Enthalpy Gas"])
             sI1 = float(rowData["Entropy Gas"])
             return (pI1,t,hI1,sI1)
 
-        elif(float(rowData["Temprature"]) < targetTemp):
+        elif(float(rowData["Temperature"]) < targetTemp):
             lowerValuePoints = rowData
             i += 1
 
-        elif(float(rowData["Temprature"]) > targetTemp):
+        elif(float(rowData["Temperature"]) > targetTemp):
             higherValuePoints = rowData
             break
 
-    pI1 = interpolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Pressure Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Pressure Gas"]))
+    pI1 = interpolation(float(lowerValuePoints["Temperature"]), float(lowerValuePoints["Pressure Gas"]), targetTemp, float(higherValuePoints["Temperature"]), float(higherValuePoints["Pressure Gas"]))
     t = targetTemp
-    hI1 = interpolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Enthalpy Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Enthalpy Gas"]))
-    sI1 = interpolation(float(lowerValuePoints["Temprature"]), float(lowerValuePoints["Entropy Gas"]), targetTemp, float(higherValuePoints["Temprature"]), float(higherValuePoints["Entropy Gas"]))
+    hI1 = interpolation(float(lowerValuePoints["Temperature"]), float(lowerValuePoints["Enthalpy Gas"]), targetTemp, float(higherValuePoints["Temperature"]), float(higherValuePoints["Enthalpy Gas"]))
+    sI1 = interpolation(float(lowerValuePoints["Temperature"]), float(lowerValuePoints["Entropy Gas"]), targetTemp, float(higherValuePoints["Temperature"]), float(higherValuePoints["Entropy Gas"]))
 
     return (pI1,t,hI1,sI1)
 
@@ -128,8 +128,8 @@ def state3_Calc(targetPressure, table, numberOfRows):
 
         elif(float(rowData["Pressure Liquid"]) == targetPressure):
             pI1 = targetPressure
-            t = float(rowData["Temprature"])
-            hI1 = float(rowData["Enthalpy Liqid"])
+            t = float(rowData["Temperature"])
+            hI1 = float(rowData["Enthalpy Liquid"])
             sI1 = float(rowData["Entropy Liquid"])
             return (pI1,t,hI1,sI1)
 
@@ -142,8 +142,8 @@ def state3_Calc(targetPressure, table, numberOfRows):
             break
 
     p = targetPressure
-    tI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Temprature"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Temprature"]))
-    hI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Enthalpy Liqid"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Enthalpy Liqid"]))
+    tI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Temperature"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Temperature"]))
+    hI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Enthalpy Liquid"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Enthalpy Liquid"]))
     sI1 = interpolation(float(lowerValuePoints["Pressure Liquid"]), float(lowerValuePoints["Entropy Liquid"]), targetPressure, float(higherValuePoints["Pressure Liquid"]), float(higherValuePoints["Entropy Liquid"]))
 
     return (p,tI1,hI1,sI1)
@@ -170,11 +170,11 @@ def state2_Prime_Calc(thermalEnergy, powerConsumption, state1_Enthalpy, state3_E
 
         else:
             if(((float(curretRow["Superheated Pressure"])) <= upperLimitTemp) and ((float(curretRow["Superheated Pressure"])) >= lowerLimitTemp)):
-                if(((float(curretRow["Enthalpy "])) <= h3) and ((float(nextRow["Enthalpy "])) >= h3)):
+                if(((float(curretRow["Enthalpy"])) <= h3) and ((float(nextRow["Enthalpy"])) >= h3)):
                     pI1 = curretRow["Superheated Pressure"]
-                    tI1 = interpolation(float(curretRow["Enthalpy "]), float(curretRow["Temprature"]), h3, float(nextRow["Enthalpy "]), float(nextRow["Temprature"]))
+                    tI1 = interpolation(float(curretRow["Enthalpy"]), float(curretRow["Temperature"]), h3, float(nextRow["Enthalpy"]), float(nextRow["Temperature"]))
                     hI1 = h3
-                    sI1 = interpolation(float(curretRow["Enthalpy "]), float(curretRow["Entropy "]), h3, float(nextRow["Enthalpy "]), float(nextRow["Entropy "]))
+                    sI1 = interpolation(float(curretRow["Enthalpy"]), float(curretRow["Entropy"]), h3, float(nextRow["Enthalpy"]), float(nextRow["Entropy"]))
                     arrayI1Values.append((pI1,tI1,hI1,sI1))
 
             curretRow = nextRow
@@ -238,7 +238,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
     print("number of rows in data sheet = " + str(numberOfRows))
 
     saturated = HeatPumpAnalysis(saturatedTable)
-    numberOfRows1 = len(saturated.get_col("Temprature"))
+    numberOfRows1 = len(saturated.get_col("Temperature"))
     print("number of rows in saturated table = " + str(numberOfRows1))
 
     superheat = HeatPumpAnalysis(superHeatedTable)
@@ -284,11 +284,11 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
 
 
 
-Results = dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
+Results = dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
 print(Results)
 
     # saturated = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturated Table.txt")
-    # numberOfRows1 = len(saturated.get_col("Temprature"))
+    # numberOfRows1 = len(saturated.get_col("Temperature"))
 
     # superheat = HeatPumpAnalysis("D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
     # numberOfRows2 = len(superheat.get_col("Superheated Pressure"))
