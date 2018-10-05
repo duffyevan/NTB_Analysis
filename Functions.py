@@ -1,3 +1,4 @@
+import os
 from Analysis import HeatPumpAnalysis
 
 def interpolation(x1, y1, x2, x3, y3):
@@ -242,7 +243,7 @@ def state2_Prime_Enthalpy_Calc(thermalEnergy, powerConsumption, state1_Enthalpy,
     return h3
 
 
-def dataCalc(dataSheet, saturatedTable, superHeatedTable):
+def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination, resultFileName):
     rawData = HeatPumpAnalysis(dataSheet)
     numberOfRows = len(rawData.get_col("Datum/Winterzeit"))
 
@@ -285,13 +286,14 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable):
         else:
             i +=1
 
-    printToExcel(arrayResults)
+    printToExcel(arrayResults, resultFileDestination, resultFileName)
 
 
-def printToExcel(arrayOfResults):
+def printToExcel(arrayOfResults, destination, fileName):
     sizeOfArray = len(arrayOfResults)
     
-    with open("output.xls", "w") as output:
+    dir_path = os.path.join(destination, fileName)
+    with open(dir_path, "w") as output:
         i = -1
         while(i < sizeOfArray):
             if(i == -1):
@@ -306,7 +308,7 @@ def printToExcel(arrayOfResults):
 
 
 
-dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt")
+dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output.xls")
 
 
 
