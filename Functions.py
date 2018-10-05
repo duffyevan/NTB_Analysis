@@ -311,5 +311,111 @@ def printToExcel(arrayOfResults, destination, fileName):
     output.close()
 
 
+#Calculate for test bench
+def dataCalc2(dataSheet, saturatedTable, superHeatedTable, resultFileDestination, resultFileName):
+    rawData = HeatPumpAnalysis(dataSheet)
+    numberOfRows = len(rawData.get_col("Zeit"))
+    print(numberOfRows)
 
-dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output.xls")
+    saturated = HeatPumpAnalysis(saturatedTable)
+    numberOfRows1 = len(saturated.get_col("Temperature"))
+
+    superheat = HeatPumpAnalysis(superHeatedTable)
+    numberOfRows2 = len(superheat.get_col("Temperature"))
+
+    HeatCapacityOfWater = 4.1855
+    arrayResults1 = []
+    arrayResults2 = []
+
+    i=0
+    while(i < numberOfRows):
+        curretRow = rawData.get_row(i)
+        #print(curretRow)
+        
+        dateTime = curretRow["Zeit"]
+        #print(dateTime)
+        waterInletTemp = float(curretRow["T_Wasser_Vorlauf"])
+        condenserTemp = waterInletTemp + 20
+        waterOutletTemp = float(curretRow["T_Wasser_Ruecklauf"])
+        waterFlowRate = float(curretRow["V_dot_Wasser"])
+        airInletTemp = float(curretRow["T_luft_ein"])
+        evaporatorTemp = airInletTemp - 20
+        compressorPower = float(curretRow["P_elek_Verdichter"])/1000
+        
+        ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
+        # print(ThermalEnergy)
+        if(ThermalEnergy > 0):
+            state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
+            state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy Vapor", "Vapor", 50, superheat, numberOfRows2)
+            state3_Result = singleInterpolation(state2_Result[0], "Pressure Liquid", "Liquid", saturated, numberOfRows1)
+            state4_Result = (state1_Result[0], state1_Result[1], state3_Result[2], "Not Found")
+            state2_Prime_Enthalpy = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
+            # print(state2_Result[2])
+            # print(state2_Prime_Enthalpy)
+            if(state2_Prime_Enthalpy > state2_Result[2] and state2_Prime_Enthalpy <= 560):
+                state2_Prime_Result = doubleInterpolation(state3_Result[0], "Pressure Vapor", state2_Prime_Enthalpy, "Enthalpy Vapor", "Vapor", 200, superheat, numberOfRows2)
+                preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
+                # print("here")
+                arrayResults1.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
+        i +=1
+    #print(arrayResults1)    
+
+    # j=0
+    # while(j < numberOfRows):
+    #     curretRow = rawData.get_row(j)
+        
+    #     dateTime = curretRow["dateTime"]
+    #     waterInletTemp = float(curretRow["T_Wasser_Vorlauf"])
+    #     waterOutletTemp = float(curretRow["T_Wasser_Ruecklauf"])
+    #     waterFlowRate = float(curretRow["V_dot_Wasser"])
+    #     compressorPower = float(curretRow["P_elek_Verdichter"])/1000
+
+    #     tempAtState1 = float(curretRow["T_ueberhitzt"])
+    #     pressureAtState1 = float(curretRow["p_Verdampfung"]) * 100
+    #     pressureAtState2 = float(curretRow["T_unterkuelt_2"]) * 100
+        
+    #     ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
+    #     if(ThermalEnergy > 0):
+    #         state1_Result = doubleInterpolation(tempAtState1, "Temperature", pressureAtState1, "Pressure Vapor", "Vapor", 50, superheat, numberOfRows2)
+    #         state2_Result = doubleInterpolation(pressureAtState2, "Pressure Vapor", state1_Result[3], "Entropy Vapor", "Vapor", 200, superheat, numberOfRows2)
+    #         state3_Result = singleInterpolation(pressureAtState2, "Pressure Liquid", "Liquid", saturated, numberOfRows1)
+    #         state4_Result = (state1_Result[0], state1_Result[1], state3_Result[2], "Not Found")
+    #         state2_Prime_Enthalpy = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
+    #         if(state2_Prime_Enthalpy > state2_Result[2] and state2_Prime_Enthalpy <= 560):
+    #             state2_Prime_Result = doubleInterpolation(pressureAtState2, "Pressure Vapor", state2_Prime_Enthalpy, "Enthalpy Vapor", "Vapor", 200, superheat, numberOfRows2)
+    #             preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
+    #             arrayResults2.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, tempAtState1, pressureAtState2))
+    #     j +=1
+
+
+    printToExcel2(arrayResults1, arrayResults2, resultFileDestination, resultFileName)
+
+
+def printToExcel2(arrayOfResults1, arrayOfResults2, destination, fileName):
+    sizeOfArray = len(arrayOfResults1)
+    #sizeOfArray2 = len(arrayOfResults2)
+
+    #if(sizeOfArray == sizeOfArray2):
+    dir_path = os.path.join(destination, fileName)
+    with open(dir_path, "w") as output:
+        i = -1
+        while(i < sizeOfArray):
+            if(i == -1):
+                print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ("Date and Time", "Ideal COP", "Actual COP", "Compressor Efficiency", "State-1 Pressure", "State-1 Temperature", "State-1 Enthalpy", "State-1 Entropy", "State-2 Pressure", "State-2 Temperature", "State-2 Enthalpy", "State-2 Entropy", "State-2' Pressure", "State-2' Temperature", "State-2' Enthalpy", "State-2' Entropy", "State-3 Pressure", "State-3 Temperature", "State-3 Enthalpy", "State-3 Entropy", "State-4 Pressure", "State-4 Temperature", "State-4 Enthalpy", "Water Inlet Temperature", "Water Outlet Temperature","Water Flowrate", "Air Inlet Temperature", "Compressor Power Usage","Calculated Thermal Energy Put Into The Water", "Assumed Temperature Of The Refrigerant Entering Condenser or State 2 Pressure", "Assumed Temperature Of The Refrigerant Entering Evaporator or State 1 Temperature"), file = output)
+                i += 1
+            else:
+                data = arrayOfResults1[i]
+                print ("%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f" % (str(data[0]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
+                # data2 = arrayOfResults2[i]
+                # print ("%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f" % (str(data2[0]), data2[1][0], data2[1][1], data2[1][2], data2[2][0], data2[2][1], data2[2][2], data2[2][3], data2[3][0], data2[3][1], data2[3][2], data2[3][3], data2[4][0], data2[4][1], data2[4][2], data2[4][3], data2[5][0], data2[5][1], data2[5][2], data2[5][3], data2[6][0], data2[6][1], data2[6][2], data2[7], data2[8], data2[9], data2[10], data2[11], data2[12], data2[13], data2[14]), file = output)
+                i += 1 
+    output.close()
+
+
+
+
+
+
+#dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output.xls")
+
+dataCalc2("D:\\reposatory\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Results", "output1.xls")
