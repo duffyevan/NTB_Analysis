@@ -287,6 +287,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
 
 
 def printToExcel(arrayOfResults, destination, fileName):
+    fileName = fileName + ".xls"
     sizeOfArray = len(arrayOfResults)
     
     dir_path = os.path.join(destination, fileName)
