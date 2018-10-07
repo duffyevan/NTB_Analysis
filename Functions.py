@@ -1,6 +1,16 @@
 import os
 from Analysis import HeatPumpAnalysis
 
+def is_number(n):
+    try:
+        float(n)   # Type-casting the string to `float`.
+                   # If string is not a valid `float`, 
+                   # it'll raise `ValueError` exception
+    except ValueError:
+        return False
+    return True
+
+
 def interpolation(x1, y1, x2, x3, y3):
     y2 = (((x2-x1)*(y3-y1))/(x3-x1))+y1
     return y2
@@ -256,32 +266,42 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
     i=0
     while(i < numberOfRows):
         curretRow = rawData.get_row(i)
-        
-        if("d10010001" == curretRow["47_Dig"]):
-            dateTime = curretRow["Datum/Winterzeit"]
-            waterInletTemp = float(curretRow["03_Sein1"])/100
-            condenserTemp = waterInletTemp + 20
-            waterOutletTemp = float(curretRow["09_Aaus1"])/100
-            waterFlowRate = float(curretRow["22_Vaufl"])/60
-            airInletTemp = float(curretRow["07_Qein1"])/100
-            evaporatorTemp = airInletTemp - 20
-            compressorPower = float(curretRow["27_PelV"])/1000
-            
-            ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
-            if(ThermalEnergy > 0):
-                state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
-                state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy Vapor", "Vapor", 50, superheat, numberOfRows2)
-                state3_Result = singleInterpolation(state2_Result[0], "Pressure Liquid", "Liquid", saturated, numberOfRows1)
-                state4_Result = (state1_Result[0], state1_Result[1], state3_Result[2], "Not Found")
-                state2_Prime_Enthalpy = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
-                if(state2_Prime_Enthalpy > state2_Result[2] and state2_Prime_Enthalpy <= 560):
-                    state2_Prime_Result = doubleInterpolation(state3_Result[0], "Pressure Vapor", state2_Prime_Enthalpy, "Enthalpy Vapor", "Vapor", 200, superheat, numberOfRows2)
-                    preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
-                    arrayResults.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
-            i +=1
+
+        if(curretRow["22_Vaufl"] > 0):
+            typeOfFlow = curretRow["22_Vaufl"]
+            tempOut = curretRow["09_Aaus1"]
 
         else:
-            i +=1
+            typeOfFlow = curretRow["21_Vsenke"]
+            tempOut = curretRow["01_Saus1"]
+
+        if(is_number(curretRow["03_Sein1"]) and is_number(tempOut) and is_number(typeOfFlow) and is_number(curretRow["07_Qein1"]) and is_number(curretRow["27_PelV"])):
+        
+            if("d10010001" == curretRow["47_Dig"]):
+                dateTime = curretRow["Datum/Winterzeit"]
+                waterInletTemp = float(curretRow["03_Sein1"])/100
+                condenserTemp = waterInletTemp + 20
+                waterOutletTemp = float(tempOut)/100
+                waterFlowRate = float(typeOfFlow)/60
+                airInletTemp = float(curretRow["07_Qein1"])/100
+                evaporatorTemp = airInletTemp - 20
+                compressorPower = float(curretRow["27_PelV"])/1000
+                
+                ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
+                if(ThermalEnergy > 0):
+                    state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
+                    state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy Vapor", "Vapor", 50, superheat, numberOfRows2)
+                    state3_Result = singleInterpolation(state2_Result[0], "Pressure Liquid", "Liquid", saturated, numberOfRows1)
+                    state4_Result = (state1_Result[0], state1_Result[1], state3_Result[2], "Not Found")
+                    state2_Prime_Enthalpy = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result[2], state3_Result[2])
+                    if(state2_Prime_Enthalpy > state2_Result[2] and state2_Prime_Enthalpy <= 560):
+                        state2_Prime_Result = doubleInterpolation(state3_Result[0], "Pressure Vapor", state2_Prime_Enthalpy, "Enthalpy Vapor", "Vapor", 200, superheat, numberOfRows2)
+                        preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
+                        arrayResults.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
+                i +=1
+
+            else:
+                i +=1
 
     printToExcel(arrayResults, resultFileDestination, resultFileName)
 
@@ -398,4 +418,4 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
 
 dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output")
 
-dataCalc_TestBench("D:\\reposatory\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Results", "output1")
+# dataCalc_TestBench("D:\\reposatory\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Results", "output1")
