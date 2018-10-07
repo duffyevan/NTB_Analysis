@@ -48,11 +48,12 @@ class NTBWebdav:
     # @param filename The name of the file in the backup_files folder to download
     # @param download_location (optional) the location to download the file to, ./ by default
     def download_file(self, filename, download_location='./'):
-        self.__download_file(os.path.join(self.backup_location, filename), download_path=download_location+filename)
+        self.__download_file(os.path.join(self.backup_location, filename), download_path=os.path.join(download_location,filename))
 
     ## Lover level version of download file. Downloads a file from path to path
     # @param path The path to the file on the server to download
     # @param download_path The path to download the file to (must include file name in path)
     def __download_file(self, path, download_path='./'):
+        print(download_path, path)
         self.client.download(local_path=download_path, remote_path=path)
 
