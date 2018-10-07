@@ -20,7 +20,7 @@ class NTBWebdav:
             'webdav_login': username,
             'webdav_password': password
         }
-        self.backup_location = "/09_SHARED_FOLDER_EXTERN/backup_files"
+        self.backup_location = "/09_SHARED_FOLDER_EXTERN/Messdaten_Feldmessung"
         self.client = wc.Client(login_options)
         logging.info("Logged Into NTB Webdav")
 
@@ -42,7 +42,7 @@ class NTBWebdav:
 
     ## List the files in the folder that files are backed up to. Effectively gets a list of files that have been backed up
     def list_backed_up_files(self):
-        return self.ls(self.backup_location)
+        return [f for f in self.ls(self.backup_location) if '.xls' in f]
 
     ## Download a single file from the backup_files folder.
     # @param filename The name of the file in the backup_files folder to download

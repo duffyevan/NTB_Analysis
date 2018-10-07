@@ -7,7 +7,7 @@ from NTBCloud import NTBWebdav
 class AnalysisTest(unittest.TestCase):
 
     def test_ls(self):
-        loginData = open('login.csv', 'r').readlines()[1].strip().split(',')
+        loginData = open('login.csv', 'r').readlines()[0].strip().split(',')
         print('loginData: ' + str(loginData))
         client = NTBWebdav(loginData[0], loginData[1], loginData[2])
         print(client.ls())
@@ -15,7 +15,7 @@ class AnalysisTest(unittest.TestCase):
         self.assertTrue(True)  # if there was no errors, pass
 
     def test_download(self):
-        loginData = open('login.csv', 'r').readlines()[1].strip().split(',')
+        loginData = open('login.csv', 'r').readlines()[0].strip().split(',')
         print('loginData: ' + str(loginData))
         client = NTBWebdav(loginData[0], loginData[1], loginData[2])
         file = client.list_backed_up_files()[0]
