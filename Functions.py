@@ -1,10 +1,15 @@
 import os
+from shutil import copyfile
+import sys
+
 from Analysis import HeatPumpAnalysis
+from NTBCloud import NTBWebdav
+
 
 def is_number(n):
     try:
         float(n)   # Type-casting the string to `float`.
-                   # If string is not a valid `float`, 
+                   # If string is not a valid `float`,
                    # it'll raise `ValueError` exception
     except ValueError:
         return False
@@ -276,7 +281,7 @@ def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination
             tempOut = curretRow["01_Saus1"]
 
         if(is_number(curretRow["03_Sein1"]) and is_number(tempOut) and is_number(typeOfFlow) and is_number(curretRow["07_Qein1"]) and is_number(curretRow["27_PelV"])):
-        
+
             if("d10010001" == curretRow["47_Dig"]):
                 dateTime = curretRow["Datum/Winterzeit"]
                 waterInletTemp = float(curretRow["03_Sein1"])/100
@@ -286,7 +291,7 @@ def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination
                 airInletTemp = float(curretRow["07_Qein1"])/100
                 evaporatorTemp = airInletTemp - 20
                 compressorPower = float(curretRow["27_PelV"])/1000
-                
+
                 ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
                 if(ThermalEnergy > 0):
                     state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
@@ -302,6 +307,8 @@ def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination
 
             else:
                 i +=1
+        else:
+            i +=1
 
     printToExcel(arrayResults, resultFileDestination, resultFileName)
 
@@ -343,7 +350,7 @@ def dataCalc_TestBench(dataSheet, saturationTable, superHeatedTable, resultFileD
     i=0
     while(i < numberOfRows):
         curretRow = rawData.get_row(i)
-        
+
         dateTime = curretRow["Zeit"]
         waterInletTemp = float(curretRow["T_Wasser_Vorlauf"])
         waterOutletTemp = float(curretRow["T_Wasser_Ruecklauf"])
@@ -416,6 +423,36 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
 
 
 
-dataCalc("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Results", "output")
 
-dataCalc_TestBench("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Results", "output1")
+
+#dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output.xls")
+
+# dataCalc_TestBench("D:\\reposatory\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Results", "output1.xls")
+
+# with open('login.csv','r') as login:
+#     login_info = login.readlines()[0].strip().split(',')
+#     webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
+#
+# for remote_file in webdav.list_backed_up_files():
+#     webdav.download_file(remote_file, download_location='./Files')
+#     local_file = os.path.join('./Files', remote_file)
+#     output_file = os.path.splitext(remote_file)[0] + '_output'
+#     print('Output File: ' + output_file)
+#
+#     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
+#     os.remove(local_file)
+
+
+with open('login.csv','r') as login:
+    login_info = login.readlines()[0].strip().split(',')
+    webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
+
+for remote_file in os.listdir('./TestFiles'):
+    # webdav.download_file(remote_file, download_location='./Files')
+    copyfile(os.path.join('./TestFiles', remote_file), os.path.join('./Files', remote_file))
+    local_file = os.path.join('./Files', remote_file)
+    output_file = os.path.splitext(remote_file)[0] + '_output'
+    print('Output File: ' + output_file)
+
+    dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
+    os.remove(local_file)
