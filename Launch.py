@@ -47,15 +47,15 @@ class Main(QObject):
 
     ## Threaded option for download for day
     def threadAnalyzeForDay(self):
-        Thread(target=self.downloadFilesForDay).start()
+        Thread(target=self.analyzeFilesForDay).start()
 
     ## Threaded option for download for month
     def threadAnalyzeForMonth(self):
-        Thread(target=self.downloadFilesForMonth).start()
+        Thread(target=self.analyzeFilesForMonth).start()
 
     ## Threaded option for download for year
     def threadAnalyzeForYear(self):
-        Thread(target=self.downloadFilesForYear).start()
+        Thread(target=self.analyzeFilesForYear).start()
 
     ## Threaded function tied to a signal for showing a dialog with the given informaiton
     # @param title The title of the dialog
@@ -64,16 +64,16 @@ class Main(QObject):
         QMessageBox.about(self.window, title, message)
 
     ## Download all files for a given day
-    def downloadFilesForDay(self):
+    def analyzeFilesForDay(self):
         pass
 
 
     ## Download all files for a given month
-    def downloadFilesForMonth(self):
+    def analyzeFilesForMonth(self):
         pass
 
     ## Download all files for a given year
-    def downloadFilesForYear(self):
+    def analyzeFilesForYear(self):
         pass
 
     ## Iterate through the list of checkboxes and get a list of all those selected
