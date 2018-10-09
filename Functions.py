@@ -1,4 +1,7 @@
 import os
+from shutil import copyfile
+import sys
+
 from Analysis import HeatPumpAnalysis
 from NTBCloud import NTBWebdav
 
@@ -426,14 +429,30 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
 
 # dataCalc_TestBench("D:\\reposatory\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Results", "output1.xls")
 
+# with open('login.csv','r') as login:
+#     login_info = login.readlines()[0].strip().split(',')
+#     webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
+#
+# for remote_file in webdav.list_backed_up_files():
+#     webdav.download_file(remote_file, download_location='./Files')
+#     local_file = os.path.join('./Files', remote_file)
+#     output_file = os.path.splitext(remote_file)[0] + '_output'
+#     print('Output File: ' + output_file)
+#
+#     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
+#     os.remove(local_file)
+
+
 with open('login.csv','r') as login:
     login_info = login.readlines()[0].strip().split(',')
     webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
 
-for remote_file in webdav.list_backed_up_files():
-    webdav.download_file(remote_file, download_location='./Files')
+for remote_file in os.listdir('./TestFiles'):
+    # webdav.download_file(remote_file, download_location='./Files')
+    copyfile(os.path.join('./TestFiles', remote_file), os.path.join('./Files', remote_file))
     local_file = os.path.join('./Files', remote_file)
     output_file = os.path.splitext(remote_file)[0] + '_output'
     print('Output File: ' + output_file)
 
     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
+    os.remove(local_file)
