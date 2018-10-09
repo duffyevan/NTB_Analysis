@@ -250,11 +250,11 @@ def state2_Prime_Enthalpy_Calc(thermalEnergy, powerConsumption, state1_Enthalpy,
     return h3
 
 
-def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination, resultFileName):
+def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination, resultFileName):
     rawData = HeatPumpAnalysis(dataSheet)
     numberOfRows = len(rawData.get_col("Datum/Winterzeit"))
 
-    saturated = HeatPumpAnalysis(saturatedTable)
+    saturated = HeatPumpAnalysis(saturationTable)
     numberOfRows1 = len(saturated.get_col("Temperature"))
 
     superheat = HeatPumpAnalysis(superHeatedTable)
@@ -326,11 +326,11 @@ def printToExcel(arrayOfResults, destination, fileName):
 
 
 #Calculate for test bench
-def dataCalc_TestBench(dataSheet, saturatedTable, superHeatedTable, resultFileDestination, resultFileName):
+def dataCalc_TestBench(dataSheet, saturationTable, superHeatedTable, resultFileDestination, resultFileName):
     rawData = HeatPumpAnalysis(dataSheet)
     numberOfRows = len(rawData.get_col("Zeit"))
 
-    saturated = HeatPumpAnalysis(saturatedTable)
+    saturated = HeatPumpAnalysis(saturationTable)
     numberOfRows1 = len(saturated.get_col("Temperature"))
 
     superheat = HeatPumpAnalysis(superHeatedTable)
@@ -416,6 +416,6 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
 
 
 
-dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output")
+dataCalc("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Results", "output")
 
-# dataCalc_TestBench("D:\\reposatory\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Results", "output1")
+dataCalc_TestBench("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\Test_Bench\\Results", "output1")
