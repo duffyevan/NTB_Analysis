@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QCheckBox, QMessageBox, Q
 
 from Functions import dataCalc
 from HostpointLib import HostpointClient
+from folder import Folder
 from frontend.mainwindow import Ui_MainWindow
 
 config_file_path = 'insert conf here'.replace('~', 'c:\\Users\\' + os.getlogin())
@@ -88,19 +89,32 @@ class Main(QObject):
                                                                                                 '/Files')
                 print(files)
                 for local_file in files:
+                    try:
+                        f = Folder('setup.conf')
+                        spread_sheets = f.getPLC_tables(plc)
+                        dataCalc(local_file,
+                                 spread_sheets[0],
+                                 spread_sheets[1],
+                                 './Files/' + plc + '/Results',
+                                 posixpath.splitext(posixpath.basename(local_file))[0] + '_output'
+                                 )
+                    except KeyError as e:
+                        self.progressBarSignal.emit(False)
 
-                    dataCalc(local_file,
-                             "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt",
-                             "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",
-                             './Files/' + plc + '/Results',
-                             posixpath.splitext(posixpath.basename(local_file))[0] + '_output'
-                             )
+                        self.showDialogSignal.emit("Error!",
+                                                   "A Key Error Occurred During The Processing For " + plc + ". " +
+                                                   str(e) + ". Make Sure The Configuration File Lists The Correct "
+                                                            "Thermodynamic Tables")
+                        logging.error("A Key Error Occurred During The Processing For " + plc + ". " + str(e) +
+                                      ". Make Sure The Configuration File Lists The Correct Thermodynamic Tables")
+                        self.progressBarSignal.emit(True)
+
             except ftplib.all_errors as e:
                 self.progressBarSignal.emit(False)
 
                 self.showDialogSignal.emit("Error!",
-                                           "An FTP Error Occurred Durning The Download For " + plc + ". " + str(e))
-                logging.error("An FTP Error Occurred Durning The Download For " + plc + ". " + str(e))
+                                           "An FTP Error Occurred During The Download For " + plc + ". " + str(e))
+                logging.error("An FTP Error Occurred During The Download For " + plc + ". " + str(e))
 
                 self.progressBarSignal.emit(True)
 
