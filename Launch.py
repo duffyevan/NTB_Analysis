@@ -1,10 +1,9 @@
 import datetime
-import ftplib
+import logging
 import os
 import sys
 from threading import Thread
 from typing import List
-import logging
 
 from PyQt5.QtCore import QDate, pyqtSignal, QObject
 from PyQt5.QtWidgets import QApplication, QMainWindow, QCheckBox, QMessageBox, QWidget, QVBoxLayout
@@ -145,12 +144,12 @@ class Main(QObject):
         scroll_layout = QVBoxLayout(scroll_content)
         scroll_content.setLayout(scroll_layout)
 
-        # for address in self.config.SPSaddresses:
-        #     ccb = QCheckBox(scroll_content)
-        #     ccb.setObjectName(address.replace('.', '_') + "Checkbox")
-        #     ccb.setText(address)
-        #     scroll_layout.addWidget(ccb)
-        #     self.checkBoxes.append(ccb)
+        for name in self.HPClient.get_plc_names():
+            ccb = QCheckBox(scroll_content)
+            ccb.setObjectName(name.replace('.', '_') + "Checkbox")
+            ccb.setText(name)
+            scroll_layout.addWidget(ccb)
+            self.checkBoxes.append(ccb)
 
         self.ui.scrollArea.setWidget(scroll_content)
 

@@ -1,3 +1,4 @@
+from datetime import datetime, date, timedelta
 import logging
 import posixpath
 from ftplib import FTP
@@ -56,9 +57,56 @@ class HostpointClient:
     def ls(self):
         return self.client.nlst()
 
+    ## Get the PLCs that reported in on a given day based on the files posesed in the cache
+    # @param day The datetime.date that should be checked
+    # @returns A set of PLC numbers
+    def get_plcs_for_day(self, day):
+        plc_numbers = set()
+        for filename in self.client.nlst():
+            if '.xls' in filename:
+                data = self.__name_to_plc_and_date(filename)
+                if data[1].__eq__(day):
+                    plc_numbers.add(data[0])
+        return plc_numbers
+
+    ## Get the PLC names that reported in on a given day based on the files posesed in the cache
+    # @param day The datetime.date that should be checked
+    # @returns A set of PLC names as strings
+    def get_plc_names_for_day(self, day):
+        plc_names = set()
+        for filename in self.client.nlst():
+            if '.xls' in filename:
+                data = self.__name_to_plc_and_date(filename)
+                if data[1].__eq__(day):
+                    plc_names.add(filename.split('_')[0])
+        return plc_names
+
+    ## Get the PLC names that reported in on any day based on the files posesed in the cache
+    # @returns A set of PLC names as strings
+    def get_plc_names(self):
+        plc_names = set()
+        for filename in self.client.nlst():
+            if '.xls' in filename:
+                data = self.__name_to_plc_and_date(filename)
+                plc_names.add(filename.split('_')[0])
+        return plc_names
+
+    ## Static method for converting a filename to a PLC number and a date contained within a tuple
+    # @param filename The name of the file to convert
+    # @returns A tuple like this: (plcnumber, datetime.date)
+    @staticmethod
+    def __name_to_plc_and_date(filename):
+        if '.xls' not in filename:
+            print("Data Not Found For " + filename)
+            return None
+        parts = filename.replace('.xls', '').split('_')
+        number = int(parts[0].replace('F', ''))
+        d = datetime.strptime(parts[1], "%Y%m%d").date()
+        return number, d
+
+
 if __name__ == '__main__':
     # Testing!!
     loginInfo = open('login.csv').readlines()[1].strip().split(',')
     h = HostpointClient(loginInfo[0], loginInfo[1], loginInfo[2])
-    h.download_file('F001_20181007_000002.xls')
-    print('Done')
+    print(h.get_plc_names_for_day(date.today() - timedelta(days=3)))
