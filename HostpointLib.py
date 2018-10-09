@@ -1,4 +1,5 @@
 import logging
+import posixpath
 from ftplib import FTP
 import os
 
@@ -20,12 +21,12 @@ class HostpointClient:
     def upload_file(self, filename):
         logging.info("Uploading " + filename)
         file = open(filename, 'rb')
-        self.client.storbinary('STOR %s' % os.path.basename(filename), file)
+        self.client.storbinary('STOR %s' % posixpath.basename(filename), file)
         file.close()
 
     def download_file(self, remote_filename, download_location='./'):
-        logging.info("Downloading " + remote_filename)
-        file = open(os.path.join(download_location,os.path.basename(remote_filename)), 'wb')
+        logging.info("Downloading %s to %s" % (remote_filename, download_location))
+        file = open(posixpath.join(download_location,posixpath.basename(remote_filename)), 'wb')
         self.client.retrbinary('RETR %s' % remote_filename, file.write)
         file.close()
 
@@ -44,13 +45,16 @@ class HostpointClient:
     # @param directory {string} Path to the directory on the local storage
 
     def upload_all_files_in_directory(self, directory):
-        self.upload_files([os.path.join(directory, file) for file in os.listdir(directory)])
+        self.upload_files([posixpath.join(directory, file) for file in os.listdir(directory)])
 
 
     ## Close the connection with HostPoint server
     def close(self):
         logging.info("Closing connection to HostPoint")
         self.client.close()
+
+    def ls(self):
+        return self.client.nlst()
 
 if __name__ == '__main__':
     # Testing!!

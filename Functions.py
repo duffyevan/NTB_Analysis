@@ -1,8 +1,10 @@
 import os
+import posixpath
 from shutil import copyfile
 import sys
 
 from Analysis import HeatPumpAnalysis
+from HostpointLib import HostpointClient
 from NTBCloud import NTBWebdav
 
 
@@ -317,7 +319,7 @@ def printToExcel(arrayOfResults, destination, fileName):
     fileName = fileName + ".xls"
     sizeOfArray = len(arrayOfResults)
     
-    dir_path = os.path.join(destination, fileName)
+    dir_path = posixpath.join(destination, fileName)
     with open(dir_path, "w") as output:
         i = -1
         while(i < sizeOfArray):
@@ -405,7 +407,7 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
     sizeOfArray2 = len(arrayOfResults2)
 
     if(sizeOfArray == sizeOfArray2):
-        dir_path = os.path.join(destination, fileName)
+        dir_path = posixpath.join(destination, fileName)
         with open(dir_path, "w") as output:
             i = -1
             while(i < sizeOfArray and i < sizeOfArray2):
@@ -435,8 +437,23 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
 #
 # for remote_file in webdav.list_backed_up_files():
 #     webdav.download_file(remote_file, download_location='./Files')
-#     local_file = os.path.join('./Files', remote_file)
-#     output_file = os.path.splitext(remote_file)[0] + '_output'
+#     local_file = posixpath.join('./Files', remote_file)
+#     output_file = posixpath.splitext(remote_file)[0] + '_output'
+#     print('Output File: ' + output_file)
+#
+#     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
+#     os.remove(local_file)
+
+
+# with open('login.csv','r') as login:
+#     login_info = login.readlines()[0].strip().split(',')
+#     webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
+#
+# for remote_file in os.listdir('./TestFiles'):
+#     # webdav.download_file(remote_file, download_location='./Files')
+#     copyfile(posixpath.join('./TestFiles', remote_file), posixpath.join('./Files', remote_file))
+#     local_file = posixpath.join('./Files', remote_file)
+#     output_file = posixpath.splitext(remote_file)[0] + '_output'
 #     print('Output File: ' + output_file)
 #
 #     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
@@ -444,14 +461,14 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
 
 
 with open('login.csv','r') as login:
-    login_info = login.readlines()[0].strip().split(',')
-    webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
-
-for remote_file in os.listdir('./TestFiles'):
-    # webdav.download_file(remote_file, download_location='./Files')
-    copyfile(os.path.join('./TestFiles', remote_file), os.path.join('./Files', remote_file))
-    local_file = os.path.join('./Files', remote_file)
-    output_file = os.path.splitext(remote_file)[0] + '_output'
+    login_info = login.readlines()[1].strip().split(',')
+    hpclient = HostpointClient(login_info[0],login_info[1],login_info[2])
+    remote_files = [f for f in hpclient.ls() if '.xls' in f]
+for remote_file in remote_files:
+    hpclient.download_file(remote_file, download_location='./Files/')
+    local_file = posixpath.join('./Files', remote_file)
+    print(local_file)
+    output_file = posixpath.splitext(remote_file)[0] + '_output'
     print('Output File: ' + output_file)
 
     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
