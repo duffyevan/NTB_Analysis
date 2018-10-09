@@ -1,5 +1,6 @@
 import logging
 import os
+import posixpath
 
 import webdav.client as wc
 
@@ -29,7 +30,7 @@ class NTBWebdav:
     # All files are placed in /backup_files/ in the shared folder
     def backup_file(self, file_path):
         logging.info("Backing up " + file_path)
-        backup_file_name = os.path.join(self.backup_location, os.path.basename(file_path))
+        backup_file_name = posixpath.join(self.backup_location, posixpath.basename(file_path))
         try:
             self.client.upload_sync(local_path=file_path, remote_path=backup_file_name)
         except wc.WebDavException as e:
@@ -48,7 +49,7 @@ class NTBWebdav:
     # @param filename The name of the file in the backup_files folder to download
     # @param download_location (optional) the location to download the file to, ./ by default
     def download_file(self, filename, download_location='./'):
-        self.__download_file(os.path.join(self.backup_location, filename), download_path=os.path.join(download_location,filename))
+        self.__download_file(posixpath.join(self.backup_location, filename), download_path=posixpath.join(download_location,filename))
 
     ## Lover level version of download file. Downloads a file from path to path
     # @param path The path to the file on the server to download

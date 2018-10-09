@@ -1,4 +1,5 @@
 import os
+import posixpath
 import unittest
 
 from NTBCloud import NTBWebdav
@@ -21,5 +22,5 @@ class AnalysisTest(unittest.TestCase):
         file = client.list_backed_up_files()[0]
         download_location = './'
         client.download_file(file, download_location)
-        self.assertTrue(os.path.exists(os.path.join(download_location, file)))
-        os.remove(os.path.join(download_location, file))
+        self.assertTrue(posixpath.exists(posixpath.join(download_location, file)))
+        os.remove(posixpath.join(download_location, file))
