@@ -77,7 +77,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>244</width>
+          <width>253</width>
           <height>140</height>
          </rect>
         </property>
@@ -103,16 +103,16 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QPushButton" name="pushButtonDownloadForDay">
+      <widget class="QPushButton" name="pushButtonAnalyzeForDay">
        <property name="text">
-        <string>Download For Day</string>
+        <string>Analyze For Day</string>
        </property>
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QPushButton" name="pushButtonDownloadForMonth">
+      <widget class="QPushButton" name="pushButtonAnalyzeForMonth">
        <property name="text">
-        <string>Download For Month</string>
+        <string>Analyze For Month</string>
        </property>
       </widget>
      </item>
@@ -120,9 +120,9 @@
       <widget class="QDateEdit" name="daySelector"/>
      </item>
      <item row="6" column="1">
-      <widget class="QPushButton" name="pushButtonDownloadForYear">
+      <widget class="QPushButton" name="pushButtonAnalyzeForYear">
        <property name="text">
-        <string>Download For Year</string>
+        <string>Analyze For Year</string>
        </property>
       </widget>
      </item>
