@@ -1,4 +1,5 @@
 import os
+import posixpath
 from configparser import ConfigParser
 import ntpath
 
@@ -19,27 +20,29 @@ class Folder:
                                                                                            os.getlogin())
         self.path_exist(analysisFolderLocation)
 
-        downloadFolderLocation = analysisFolderLocation + "Files Download Folder\\"
+        downloadFolderLocation = posixpath.join(analysisFolderLocation,"Files Download Folder")
         self.path_exist(downloadFolderLocation)
 
-        outputFolderLocation =  analysisFolderLocation + "Analyzation Result's Folder\\"
+        outputFolderLocation =  posixpath.join(analysisFolderLocation,"Analyzation Result's Folder")
         self.path_exist(outputFolderLocation)
 
-        saturationTableFolder = analysisFolderLocation + "Saturation Tables\\"
+        saturationTableFolder = posixpath.join(analysisFolderLocation,"Saturation Tables")
         self.path_exist(saturationTableFolder)
 
-        superheatedTableFolder = analysisFolderLocation + "Superheated Tables\\"
+        superheatedTableFolder = posixpath.join(analysisFolderLocation,"Superheated Tables")
         self.path_exist(superheatedTableFolder)
 
 
     def getPLC_tables(self, PLC_number):
         saturationTableName = self.configFile[PLC_number]['saturationTable']
-        saturationTableFolder = self.configFile['setup']['analyzationFolderLocation'].replace("~", "c:\\Users\\" + os.getlogin()) + "Saturation Tables\\"
-        saturationTablePath = os.path.join(saturationTableFolder, saturationTableName)
+        saturationTableFolder = posixpath.join(self.configFile['setup']['analyzationFolderLocation'].replace("~",
+                                "c:\\Users\\" + os.getlogin()),"Saturation Tables")
+        saturationTablePath = posixpath.join(saturationTableFolder, saturationTableName)
 
         superheatedTableName = self.configFile[PLC_number]['superHeatedTable']
-        superheatedTableFolder = self.configFile['setup']['analyzationFolderLocation'].replace("~", "c:\\Users\\" + os.getlogin()) + "Superheated Tables\\"
-        superheatedTablePath = os.path.join(superheatedTableFolder, superheatedTableName)
+        superheatedTableFolder = posixpath.join(self.configFile['setup']['analyzationFolderLocation']
+                                           .replace("~","c:\\Users\\" + os.getlogin()),"Superheated Tables")
+        superheatedTablePath = posixpath.join(superheatedTableFolder, superheatedTableName)
 
         return (saturationTablePath, superheatedTablePath)
 
