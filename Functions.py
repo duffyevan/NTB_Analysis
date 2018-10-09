@@ -318,7 +318,10 @@ def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination
 def printToExcel(arrayOfResults, destination, fileName):
     fileName = fileName + ".xls"
     sizeOfArray = len(arrayOfResults)
-    
+
+    if not posixpath.exists(destination) or not posixpath.isdir(destination):
+        os.makedirs(destination)
+
     dir_path = posixpath.join(destination, fileName)
     with open(dir_path, "w") as output:
         i = -1
@@ -459,17 +462,18 @@ def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileNa
 #     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
 #     os.remove(local_file)
 
+if __name__ == '__main__':
 
-with open('login.csv','r') as login:
-    login_info = login.readlines()[1].strip().split(',')
-    hpclient = HostpointClient(login_info[0],login_info[1],login_info[2])
-    remote_files = [f for f in hpclient.ls() if '.xls' in f]
-for remote_file in remote_files:
-    hpclient.download_file(remote_file, download_location='./Files/')
-    local_file = posixpath.join('./Files', remote_file)
-    print(local_file)
-    output_file = posixpath.splitext(remote_file)[0] + '_output'
-    print('Output File: ' + output_file)
+    with open('login.csv','r') as login:
+        login_info = login.readlines()[1].strip().split(',')
+        hpclient = HostpointClient(login_info[0],login_info[1],login_info[2])
+        remote_files = [f for f in hpclient.ls() if '.xls' in f]
+    for remote_file in remote_files:
+        hpclient.download_file(remote_file, download_location='./Files/')
+        local_file = posixpath.join('./Files', remote_file)
+        print(local_file)
+        output_file = posixpath.splitext(remote_file)[0] + '_output'
+        print('Output File: ' + output_file)
 
-    dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
-    os.remove(local_file)
+        dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
+        os.remove(local_file)

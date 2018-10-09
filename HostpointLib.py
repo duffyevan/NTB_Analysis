@@ -27,13 +27,26 @@ class HostpointClient:
 
     def download_file(self, remote_filename, download_location='./'):
         logging.info("Downloading %s to %s" % (remote_filename, download_location))
+        if not posixpath.exists(download_location) or not posixpath.isdir(download_location):
+            os.makedirs(download_location)
         file = open(posixpath.join(download_location,posixpath.basename(remote_filename)), 'wb')
         self.client.retrbinary('RETR %s' % remote_filename, file.write)
         file.close()
+        return posixpath.join(download_location,posixpath.basename(remote_filename))
 
     def download_files(self, files, download_location='./'):
+        local_files = []
         for file in files:
-            self.download_file(file, download_location)
+            local_files.append(self.download_file(file, download_location))
+        return local_files
+
+    def download_files_for_plc_and_day(self, name, date, download_location='./'):
+        local_files = []
+        for file in self.list_files():
+            data = self.__name_to_plc_and_date(file)
+            if data[1].__eq__(date) and data[0] == int(name.replace('F','')):
+                local_files.append(self.download_file(file, download_location))
+        return local_files
 
     ## Upload a list of files from the local storage to the FTP server
     # @param filelist {list[string]} A list of paths to files on the local storage
@@ -62,11 +75,10 @@ class HostpointClient:
     # @returns A set of PLC numbers
     def get_plcs_for_day(self, day):
         plc_numbers = set()
-        for filename in self.client.nlst():
-            if '.xls' in filename:
-                data = self.__name_to_plc_and_date(filename)
-                if data[1].__eq__(day):
-                    plc_numbers.add(data[0])
+        for filename in self.list_files():
+            data = self.__name_to_plc_and_date(filename)
+            if data[1].__eq__(day):
+                plc_numbers.add(data[0])
         return plc_numbers
 
     ## Get the PLC names that reported in on a given day based on the files posesed in the cache
@@ -74,21 +86,18 @@ class HostpointClient:
     # @returns A set of PLC names as strings
     def get_plc_names_for_day(self, day):
         plc_names = set()
-        for filename in self.client.nlst():
-            if '.xls' in filename:
-                data = self.__name_to_plc_and_date(filename)
-                if data[1].__eq__(day):
-                    plc_names.add(filename.split('_')[0])
+        for filename in self.list_files():
+            data = self.__name_to_plc_and_date(filename)
+            if data[1].__eq__(day):
+                plc_names.add(filename.split('_')[0])
         return plc_names
 
     ## Get the PLC names that reported in on any day based on the files posesed in the cache
     # @returns A set of PLC names as strings
     def get_plc_names(self):
         plc_names = set()
-        for filename in self.client.nlst():
-            if '.xls' in filename:
-                data = self.__name_to_plc_and_date(filename)
-                plc_names.add(filename.split('_')[0])
+        for filename in self.list_files():
+            plc_names.add(filename.split('_')[0])
         return plc_names
 
     ## Static method for converting a filename to a PLC number and a date contained within a tuple
@@ -104,9 +113,13 @@ class HostpointClient:
         d = datetime.strptime(parts[1], "%Y%m%d").date()
         return number, d
 
+    def list_files(self):
+        return [f for f in self.client.nlst() if '.xls' in f]
+
+
 
 if __name__ == '__main__':
     # Testing!!
     loginInfo = open('login.csv').readlines()[1].strip().split(',')
     h = HostpointClient(loginInfo[0], loginInfo[1], loginInfo[2])
-    print(h.get_plc_names_for_day(date.today() - timedelta(days=3)))
+    print(h.download_files_for_plc_and_day('F001',date.today() - timedelta(days=3)))

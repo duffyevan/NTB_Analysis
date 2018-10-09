@@ -1,6 +1,8 @@
 import datetime
+import ftplib
 import logging
 import os
+import posixpath
 import sys
 from threading import Thread
 from typing import List
@@ -8,6 +10,7 @@ from typing import List
 from PyQt5.QtCore import QDate, pyqtSignal, QObject
 from PyQt5.QtWidgets import QApplication, QMainWindow, QCheckBox, QMessageBox, QWidget, QVBoxLayout
 
+from Functions import dataCalc
 from HostpointLib import HostpointClient
 from frontend.mainwindow import Ui_MainWindow
 
@@ -20,6 +23,8 @@ class Main(QObject):
     config = None
     checkBoxes: List[QCheckBox] = []
     showDialogSignal = pyqtSignal(str, str)
+    downloadingSignal = pyqtSignal(bool)
+    progressBarSignal = pyqtSignal(bool)
 
     ## Constructor
     # Loads configuration and initializes superclass
@@ -31,7 +36,14 @@ class Main(QObject):
         logging.basicConfig(filename=self.log_path, level=logging.INFO, format='%(asctime)s: %(levelname)s : %(message)s')
         #TODO add a log file
         logging.info("Starting...")
-        self.HPClient = HostpointClient(loginInfo[0],loginInfo[1],loginInfo[2])
+
+        try:
+            self.HPClient = HostpointClient(loginInfo[0],loginInfo[1],loginInfo[2])
+        except ftplib.all_errors as e:
+            logging.error("An FTP Error Has Occurred While Logging Into HostPoint: %s" % (str(e)))
+            print("An FTP Error Has Occurred While Logging Into HostPoint: %s" % (str(e)))
+            exit(-1)
+
         logging.info('Logged into hostpoint')
 
     ## Opens the configuration in Notepad so the user can edit it.
@@ -65,8 +77,36 @@ class Main(QObject):
 
     ## Download all files for a given day
     def analyzeFilesForDay(self):
-        pass
+        self.downloadingSignal.emit(True)
+        selected_plcs = self.getSelectedPLCs()
 
+        for plc in selected_plcs:
+            try:
+                qdate = self.ui.daySelector.date()
+                dt = datetime.date(qdate.year(), qdate.month(), qdate.day())
+                files = self.HPClient.download_files_for_plc_and_day(plc, dt, download_location='./Files/' + plc +
+                                                                                                '/Files')
+                print(files)
+                for local_file in files:
+
+                    dataCalc(local_file,
+                             "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt",
+                             "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",
+                             './Files/' + plc + '/Results',
+                             posixpath.splitext(posixpath.basename(local_file))[0] + '_output'
+                             )
+            except ftplib.all_errors as e:
+                self.progressBarSignal.emit(False)
+
+                self.showDialogSignal.emit("Error!",
+                                           "An FTP Error Occurred Durning The Download For " + plc + ". " + str(e))
+                logging.error("An FTP Error Occurred Durning The Download For " + plc + ". " + str(e))
+
+                self.progressBarSignal.emit(True)
+
+        self.showDialogSignal.emit("Done!", "Download Process Is Complete")
+        logging.info("Download Process Is Complete")
+        self.downloadingSignal.emit(False)
 
     ## Download all files for a given month
     def analyzeFilesForMonth(self):
@@ -113,12 +153,17 @@ class Main(QObject):
     # @param enabled the boolean value whether its enabled or not
     def setAllButtonsEnabled(self, enabled):
         self.ui.pushButtonAnalyzeForDay.setEnabled(enabled)
-        self.ui.pushButtonDownloadForMonth.setEnabled(enabled)
-        self.ui.pushButtonDownloadForYear.setEnabled(enabled)
+        self.ui.pushButtonAnalyzeForMonth.setEnabled(enabled)
+        self.ui.pushButtonAnalyzeForYear.setEnabled(enabled)
         self.ui.pushButtonDisselectAll.setEnabled(enabled)
         self.ui.pushButtonSelectAll.setEnabled(enabled)
         for checkbox in self.checkBoxes:
             checkbox.setEnabled(enabled)
+
+    def prepareForDownload(self, starting):
+        self.setProgressBarEnabled(starting)
+        self.setAllButtonsEnabled(not starting)
+
 
     ## Set up the UI elements and do any needed config setup before starting the UI
     def setup_ui(self):
@@ -145,22 +190,28 @@ class Main(QObject):
         scroll_layout = QVBoxLayout(scroll_content)
         scroll_content.setLayout(scroll_layout)
 
-        for name in self.HPClient.get_plc_names():
-            ccb = QCheckBox(scroll_content)
-            ccb.setObjectName(name.replace('.', '_') + "Checkbox")
-            ccb.setText(name)
-            scroll_layout.addWidget(ccb)
-            self.checkBoxes.append(ccb)
+        try:
+            for name in self.HPClient.get_plc_names():
+                ccb = QCheckBox(scroll_content)
+                ccb.setObjectName(name.replace('.', '_') + "Checkbox")
+                ccb.setText(name)
+                scroll_layout.addWidget(ccb)
+                self.checkBoxes.append(ccb)
+        except ftplib.all_errors as e:
+            logging.error("An FTP Error Has Occurred While Getting Metadata From HostPoint: %s" % (str(e)))
+            print("An FTP Error Has Occurred While Getting Metadata From HostPoint: %s" % (str(e)))
+            exit(-1)
 
         self.ui.scrollArea.setWidget(scroll_content)
 
         self.setProgressBarEnabled(False)
 
         self.showDialogSignal.connect(self.showDialog)
+        self.progressBarSignal.connect(self.setProgressBarEnabled)
+        self.downloadingSignal.connect(self.prepareForDownload)
 
 
 if __name__ == '__main__':
-# def run():
     main = Main()
     app = QApplication(sys.argv)
     main.window = QMainWindow()
