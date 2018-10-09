@@ -40,9 +40,10 @@ def getPLC_tables(configFile, PLC_number):
     return (saturationTablePath, superheatedTablePath) 
     
 
-def get_PLC_Name(): 
-    ntpath.basename("a/b/c")
-
+def get_PLC_Name(file, numberOfFirstCharacters): 
+    nameOfFile = ntpath.basename(file)
+    PLC_number = nameOfFile[:numberOfFirstCharacters]
+    return PLC_number
 
 
 
@@ -54,6 +55,8 @@ foldersSetup(config)
 tablePaths = getPLC_tables(config, 'F001')
 print(tablePaths[0])
 print(tablePaths[1])
+PLCnumber = get_PLC_Name("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Files\\F001_20180829_000002.xls", 4)
+print(PLCnumber)
 
 # if(os.path.exists(tablePaths[0])):
 #     print("saturation file exists")
