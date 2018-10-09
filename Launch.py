@@ -15,7 +15,7 @@ from HostpointLib import HostpointClient
 from folder import Folder
 from frontend.mainwindow import Ui_MainWindow
 
-config_file_path = 'insert conf here'.replace('~', 'c:\\Users\\' + os.getlogin())
+config_file_path = './setup.conf'
 
 
 class Main(QObject):
@@ -58,15 +58,15 @@ class Main(QObject):
         # os.system("notepad " + config_file_path)
         # QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
-    ## Threaded option for download for day
+    ## Threaded option for Analyze for day
     def threadAnalyzeForDay(self):
         Thread(target=self.analyzeFilesForDay).start()
 
-    ## Threaded option for download for month
+    ## Threaded option for Analyze for month
     def threadAnalyzeForMonth(self):
         Thread(target=self.analyzeFilesForMonth).start()
 
-    ## Threaded option for download for year
+    ## Threaded option for Analyze for year
     def threadAnalyzeForYear(self):
         Thread(target=self.analyzeFilesForYear).start()
 
@@ -76,7 +76,7 @@ class Main(QObject):
     def showDialog(self, title, message):
         QMessageBox.about(self.window, title, message)
 
-    ## Download all files for a given day
+    ## Analyze all files for a given day
     def analyzeFilesForDay(self):
         self.downloadingSignal.emit(True)
         selected_plcs = self.getSelectedPLCs()
@@ -118,15 +118,15 @@ class Main(QObject):
 
                 self.progressBarSignal.emit(True)
 
-        self.showDialogSignal.emit("Done!", "Download Process Is Complete")
-        logging.info("Download Process Is Complete")
+        self.showDialogSignal.emit("Done!", "Analysis Process Is Complete")
+        logging.info("Analysis Process Is Complete")
         self.downloadingSignal.emit(False)
 
-    ## Download all files for a given month
+    ## Analyze all files for a given month
     def analyzeFilesForMonth(self):
         pass
 
-    ## Download all files for a given year
+    ## Analyze all files for a given year
     def analyzeFilesForYear(self):
         pass
 
@@ -136,7 +136,7 @@ class Main(QObject):
         selected_addresses: List[str] = []
         for checkBox in self.checkBoxes:
             if checkBox.isChecked():
-                selected_addresses.append(checkBox.text())  # TODO FIXME this is bad
+                selected_addresses.append(checkBox.text())  # this is bad, but whatever
         return selected_addresses
 
     ## Set all checkboxes' checked values to a given value
@@ -163,7 +163,7 @@ class Main(QObject):
             self.ui.masterProgressBar.setRange(0, 10)
             self.ui.masterProgressBar.setDisabled(True)
 
-    ## Sets the enabled status of all the buttons that can create a thread. Used to prevent multiple async downloads
+    ## Sets the enabled status of all the buttons that can create a thread. Used to prevent multiple async commands
     # @param enabled the boolean value whether its enabled or not
     def setAllButtonsEnabled(self, enabled):
         self.ui.pushButtonAnalyzeForDay.setEnabled(enabled)
