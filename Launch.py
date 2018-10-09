@@ -26,8 +26,9 @@ class Main(QObject):
     def __init__(self):
         super(Main, self).__init__()
         self.ui = None
+        self.log_path = './log.txt'
         loginInfo = open('login.csv').readlines()[1].strip().split(',')
-        logging.basicConfig(filename='./log', level=logging.INFO, format='%(asctime)s: %(levelname)s : %(message)s')
+        logging.basicConfig(filename=self.log_path, level=logging.INFO, format='%(asctime)s: %(levelname)s : %(message)s')
         #TODO add a log file
         logging.info("Starting...")
         self.HPClient = HostpointClient(loginInfo[0],loginInfo[1],loginInfo[2])
@@ -40,7 +41,7 @@ class Main(QObject):
         QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
     def open_log_file(self):
-        Thread(target=os.system, args=("notepad " + self.config.log_path,)).start()
+        Thread(target=os.system, args=("notepad " + self.log_path,)).start()
         # os.system("notepad " + config_file_path)
         # QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
