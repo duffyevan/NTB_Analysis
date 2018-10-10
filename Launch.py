@@ -113,6 +113,7 @@ class Main(QObject):
         selected_plcs = self.getSelectedPLCs()
 
         if len(selected_plcs) is 0:
+            self.showDialogSignal.emit("Error!", "No PLC Selected")
             return
 
         self.downloadingSignal.emit(True)
@@ -141,6 +142,7 @@ class Main(QObject):
         selected_plcs = self.getSelectedPLCs()
 
         if len(selected_plcs) is 0:
+            self.showDialogSignal.emit("Error!", "No PLC Selected")
             return
 
         self.downloadingSignal.emit(True)
@@ -173,6 +175,7 @@ class Main(QObject):
         selected_plcs = self.getSelectedPLCs()
 
         if len(selected_plcs) is 0:
+            self.showDialogSignal.emit("Error!", "No PLC Selected")
             return
 
         self.downloadingSignal.emit(True)
