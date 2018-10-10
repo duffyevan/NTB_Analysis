@@ -80,33 +80,33 @@ class Main(QObject):
     def analyzeFilesForDay(self):
         self.downloadingSignal.emit(True)
         selected_plcs = self.getSelectedPLCs()
+        f = Folder('setup.conf')
 
         for plc in selected_plcs:
             try:
                 qdate = self.ui.daySelector.date()
                 dt = datetime.date(qdate.year(), qdate.month(), qdate.day())
-                files = self.HPClient.download_files_for_plc_and_day(plc, dt, download_location='./Files/' + plc +
-                                                                                                '/Files')
+                files = self.HPClient.download_files_for_plc_and_day(plc, dt, download_location=f.downloadFolderLocation)
                 print(files)
                 for local_file in files:
                     try:
-                        f = Folder('setup.conf')
                         spread_sheets = f.getPLC_tables(plc)
                         dataCalc(local_file,
                                  spread_sheets[0],
                                  spread_sheets[1],
-                                 './Files/' + plc + '/Results',
-                                 posixpath.splitext(posixpath.basename(local_file))[0] + '_output'
+                                 posixpath.join(f.outputFolderLocation, plc),
+                                 posixpath.splitext(posixpath.basename(local_file))[0] + '_analyzed_efficiency'
                                  )
+                        os.remove(local_file)
                     except KeyError as e:
                         self.progressBarSignal.emit(False)
 
                         self.showDialogSignal.emit("Error!",
                                                    "A Key Error Occurred During The Processing For " + plc + ". " +
                                                    str(e) + ". Make Sure The Configuration File Lists The Correct "
-                                                            "Thermodynamic Tables")
+                                                            "Thermodynamic Table Names")
                         logging.error("A Key Error Occurred During The Processing For " + plc + ". " + str(e) +
-                                      ". Make Sure The Configuration File Lists The Correct Thermodynamic Tables")
+                                      ". Make Sure The Configuration File Lists The Correct Thermodynamic Table Names")
                         self.progressBarSignal.emit(True)
 
             except ftplib.all_errors as e:
@@ -119,6 +119,7 @@ class Main(QObject):
                 self.progressBarSignal.emit(True)
 
         self.showDialogSignal.emit("Done!", "Analysis Process Is Complete")
+        f.deleteDownloadFolder()
         logging.info("Analysis Process Is Complete")
         self.downloadingSignal.emit(False)
 

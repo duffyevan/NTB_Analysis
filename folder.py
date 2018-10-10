@@ -2,6 +2,7 @@ import os
 import posixpath
 from configparser import ConfigParser
 import ntpath
+from shutil import rmtree
 
 
 class Folder:
@@ -14,57 +15,52 @@ class Folder:
     def __init__(self, config_file_path):
         self.configFile = ConfigParser()
         self.configFile.read(config_file_path)
+        self.analysisFolderLocation = posixpath.join(self.configFile['setup']['analyzationFolderLocation'],
+                                                     'Analyzer')
+        self.downloadFolderLocation = posixpath.join(self.analysisFolderLocation, "Files Download Folder")
+        self.outputFolderLocation = posixpath.join(self.analysisFolderLocation, "Analysis Results Folder")
+        self.saturationTableFolder = posixpath.join(self.analysisFolderLocation, "Saturation Tables")
+        self.superheatedTableFolder = posixpath.join(self.analysisFolderLocation, "Superheated Tables")
+
+        self.foldersSetup()
 
     def foldersSetup(self):
-        analysisFolderLocation = self.configFile['setup']['analyzationFolderLocation'].replace("~", "c:\\Users\\" +
-                                                                                           os.getlogin())
-        self.path_exist(analysisFolderLocation)
-
-        downloadFolderLocation = posixpath.join(analysisFolderLocation,"Files Download Folder")
-        self.path_exist(downloadFolderLocation)
-
-        outputFolderLocation =  posixpath.join(analysisFolderLocation,"Analyzation Result's Folder")
-        self.path_exist(outputFolderLocation)
-
-        saturationTableFolder = posixpath.join(analysisFolderLocation,"Saturation Tables")
-        self.path_exist(saturationTableFolder)
-
-        superheatedTableFolder = posixpath.join(analysisFolderLocation,"Superheated Tables")
-        self.path_exist(superheatedTableFolder)
-
+        self.path_exist(self.analysisFolderLocation)
+        self.path_exist(self.downloadFolderLocation)
+        self.path_exist(self.outputFolderLocation)
+        self.path_exist(self.saturationTableFolder)
+        self.path_exist(self.superheatedTableFolder)
 
     def getPLC_tables(self, PLC_number):
         saturationTableName = self.configFile[PLC_number]['saturationTable']
-        saturationTableFolder = posixpath.join(self.configFile['setup']['analyzationFolderLocation'].replace("~",
-                                "c:\\Users\\" + os.getlogin()),"Saturation Tables")
+        saturationTableFolder = self.saturationTableFolder
         saturationTablePath = posixpath.join(saturationTableFolder, saturationTableName)
 
         superheatedTableName = self.configFile[PLC_number]['superHeatedTable']
-        superheatedTableFolder = posixpath.join(self.configFile['setup']['analyzationFolderLocation']
-                                           .replace("~","c:\\Users\\" + os.getlogin()),"Superheated Tables")
+        superheatedTableFolder = self.superheatedTableFolder
         superheatedTablePath = posixpath.join(superheatedTableFolder, superheatedTableName)
 
         return (saturationTablePath, superheatedTablePath)
-
 
     def get_PLC_Name(self, file, numberOfFirstCharacters):
         nameOfFile = ntpath.basename(file)
         PLC_number = nameOfFile[:numberOfFirstCharacters]
         return PLC_number
 
-
+    def deleteDownloadFolder(self):
+        rmtree(self.downloadFolderLocation)
 
 if __name__ == '__main__':
-
-    #setup reading the config file
+    # setup reading the config file
     f = Folder('setup.conf')
-    f.foldersSetup()
-    tablePaths = f.getPLC_tables('F001')
-    print(tablePaths[0])
-    print(tablePaths[1])
-    PLCnumber = f.get_PLC_Name("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Files\\F001_20180829_000002"
-                              ".xls", 4)
-    print(PLCnumber)
+    # f.cleanFolder()
+    # f.foldersSetup()
+    # tablePaths = f.getPLC_tables('F001')
+    # print(tablePaths[0])
+    # print(tablePaths[1])
+    # PLCnumber = f.get_PLC_Name("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Files\\F001_20180829_000002"
+    #                            ".xls", 4)
+    # print(PLCnumber)
 
     # if(os.path.exists(tablePaths[0])):
     #     print("saturation file exists")
