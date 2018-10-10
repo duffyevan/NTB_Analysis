@@ -267,7 +267,7 @@ class Main(QObject):
         scroll_content.setLayout(scroll_layout)
 
         try:
-            for name in self.HPClient.get_plc_names():
+            for name in sorted(self.HPClient.get_plc_names()):
                 ccb = QCheckBox(scroll_content)
                 ccb.setObjectName(name.replace('.', '_') + "Checkbox")
                 ccb.setText(name)
