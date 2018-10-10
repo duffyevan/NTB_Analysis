@@ -258,6 +258,10 @@ def state2_Prime_Enthalpy_Calc(thermalEnergy, powerConsumption, state1_Enthalpy,
 
 
 def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination, resultFileName, HeatCapacityOfFluidBeingHeated):
+
+    if not posixpath.exists(resultFileDestination):
+        os.makedirs(resultFileDestination)
+
     rawData = HeatPumpAnalysis(dataSheet)
     numberOfRows = len(rawData.get_col("Datum/Winterzeit"))
 
@@ -335,7 +339,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
 def printToExcel(arrayOfResults, destination, fileName):
     fileName = fileName + ".xls"
     sizeOfArray = len(arrayOfResults)
-    
+
     dir_path = os.path.join(destination, fileName)
     with open(dir_path, "w") as output:
         i = -1
