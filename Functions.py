@@ -506,5 +506,5 @@ if __name__ == '__main__':
         output_file = posixpath.splitext(remote_file)[0] + '_output'
         print('Output File: ' + output_file)
 
-        dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
+        dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file, 4.814)
         os.remove(local_file)
