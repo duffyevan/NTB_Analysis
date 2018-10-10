@@ -110,9 +110,12 @@ class Main(QObject):
 
     ## Analyze all files for a given day
     def analyzeFilesForDay(self):
-        self.downloadingSignal.emit(True)
         selected_plcs = self.getSelectedPLCs()
 
+        if len(selected_plcs) is 0:
+            return
+
+        self.downloadingSignal.emit(True)
         for plc in selected_plcs:
             try:
                 qdate = self.ui.daySelector.date()
@@ -135,9 +138,12 @@ class Main(QObject):
 
     ## Analyze all files for a given month
     def analyzeFilesForMonth(self):
-        self.downloadingSignal.emit(True)
         selected_plcs = self.getSelectedPLCs()
 
+        if len(selected_plcs) is 0:
+            return
+
+        self.downloadingSignal.emit(True)
         for plc in selected_plcs:
             try:
                 qdate = self.ui.monthSelector.date()
@@ -164,9 +170,12 @@ class Main(QObject):
 
     ## Analyze all files for a given year
     def analyzeFilesForYear(self):
-        self.downloadingSignal.emit(True)
         selected_plcs = self.getSelectedPLCs()
-        print(selected_plcs)
+
+        if len(selected_plcs) is 0:
+            return
+
+        self.downloadingSignal.emit(True)
         for plc in selected_plcs:
             try:
                 qdate = self.ui.yearSelector.date()
