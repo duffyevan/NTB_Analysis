@@ -95,7 +95,7 @@ class Main(QObject):
                          spread_sheets[1],
                          posixpath.join(self.folder.outputFolderLocation, plc),
                          posixpath.splitext(posixpath.basename(local_file))[0] + '_analyzed_efficiency',
-                         4.184)
+                         self.folder.configFile[plc]["specificHeatCapacity"])
                 os.remove(local_file)
             except KeyError as e:
                 self.progressBarSignal.emit(False)
