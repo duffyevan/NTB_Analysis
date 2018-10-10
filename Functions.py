@@ -1,11 +1,8 @@
 import os
 import posixpath
-from shutil import copyfile
-import sys
 
 from Analysis import HeatPumpAnalysis
 from HostpointLib import HostpointClient
-from NTBCloud import NTBWebdav
 
 
 def is_number(n):
