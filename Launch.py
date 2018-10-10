@@ -34,13 +34,14 @@ class Main(QObject):
         self.ui = None
         self.log_path = './log.txt'
         loginInfo = open('login.csv').readlines()[1].strip().split(',')
-        logging.basicConfig(filename=self.log_path, level=logging.INFO, format='%(asctime)s: %(levelname)s : %(message)s')
-        #TODO add a log file
+        logging.basicConfig(filename=self.log_path, level=logging.INFO,
+                            format='%(asctime)s: %(levelname)s : %(message)s')
+        # TODO add a log file
         logging.info("Starting...")
         self.folder = Folder('setup.conf')
 
         try:
-            self.HPClient = HostpointClient(loginInfo[0],loginInfo[1],loginInfo[2])
+            self.HPClient = HostpointClient(loginInfo[0], loginInfo[1], loginInfo[2])
         except ftplib.all_errors as e:
             logging.error("An FTP Error Has Occurred While Logging Into HostPoint: %s" % (str(e)))
             print("An FTP Error Has Occurred While Logging Into HostPoint: %s" % (str(e)))
@@ -82,6 +83,31 @@ class Main(QObject):
     def showDialog(self, title, message):
         QMessageBox.about(self.window, title, message)
 
+    def doTheThingForDayAndPLC(self, plc, dt):
+        files = self.HPClient.download_files_for_plc_and_day(plc, dt,
+                                                             download_location=self.folder.downloadFolderLocation)
+        print(files)
+        for local_file in files:
+            try:
+                spread_sheets = self.folder.getPLC_tables(plc)
+                dataCalc(local_file,
+                         spread_sheets[0],
+                         spread_sheets[1],
+                         posixpath.join(self.folder.outputFolderLocation, plc),
+                         posixpath.splitext(posixpath.basename(local_file))[0] + '_analyzed_efficiency',
+                         4.184)
+                os.remove(local_file)
+            except KeyError as e:
+                self.progressBarSignal.emit(False)
+
+                self.showDialogSignal.emit("Error!",
+                                           "A Key Error Occurred During The Processing For " + plc + ". " +
+                                           str(e) + ". Make Sure The Configuration File Lists The Correct "
+                                                    "Thermodynamic Table Names")
+                logging.error("A Key Error Occurred During The Processing For " + plc + ". " + str(e) +
+                              ". Make Sure The Configuration File Lists The Correct Thermodynamic Table Names")
+                self.progressBarSignal.emit(True)
+
     ## Analyze all files for a given day
     def analyzeFilesForDay(self):
         self.downloadingSignal.emit(True)
@@ -91,28 +117,7 @@ class Main(QObject):
             try:
                 qdate = self.ui.daySelector.date()
                 dt = datetime.date(qdate.year(), qdate.month(), qdate.day())
-                files = self.HPClient.download_files_for_plc_and_day(plc, dt, download_location=self.folder.downloadFolderLocation)
-                print(files)
-                for local_file in files:
-                    try:
-                        spread_sheets = self.folder.getPLC_tables(plc)
-                        dataCalc(local_file,
-                                 spread_sheets[0],
-                                 spread_sheets[1],
-                                 posixpath.join(self.folder.outputFolderLocation, plc),
-                                 posixpath.splitext(posixpath.basename(local_file))[0] + '_analyzed_efficiency'
-                                 )
-                        os.remove(local_file)
-                    except KeyError as e:
-                        self.progressBarSignal.emit(False)
-
-                        self.showDialogSignal.emit("Error!",
-                                                   "A Key Error Occurred During The Processing For " + plc + ". " +
-                                                   str(e) + ". Make Sure The Configuration File Lists The Correct "
-                                                            "Thermodynamic Table Names")
-                        logging.error("A Key Error Occurred During The Processing For " + plc + ". " + str(e) +
-                                      ". Make Sure The Configuration File Lists The Correct Thermodynamic Table Names")
-                        self.progressBarSignal.emit(True)
+                self.doTheThingForDayAndPLC(plc, dt)
 
             except ftplib.all_errors as e:
                 self.progressBarSignal.emit(False)
@@ -130,7 +135,32 @@ class Main(QObject):
 
     ## Analyze all files for a given month
     def analyzeFilesForMonth(self):
-        pass
+        self.downloadingSignal.emit(True)
+        selected_plcs = self.getSelectedPLCs()
+
+        for plc in selected_plcs:
+            try:
+                qdate = self.ui.monthSelector.date()
+                dt = datetime.date(qdate.year(), qdate.month(), 1)
+                calc_month = dt.month
+                while dt.month is calc_month:
+                    print(dt)
+                    self.doTheThingForDayAndPLC(plc, dt)
+                    dt = dt + datetime.timedelta(1)
+
+            except ftplib.all_errors as e:
+                self.progressBarSignal.emit(False)
+
+                self.showDialogSignal.emit("Error!",
+                                           "An FTP Error Occurred During The Download For " + plc + ". " + str(e))
+                logging.error("An FTP Error Occurred During The Download For " + plc + ". " + str(e))
+
+                self.progressBarSignal.emit(True)
+
+        self.showDialogSignal.emit("Done!", "Analysis Process Is Complete")
+        self.folder.deleteDownloadFolder()
+        logging.info("Analysis Process Is Complete")
+        self.downloadingSignal.emit(False)
 
     ## Analyze all files for a given year
     def analyzeFilesForYear(self):
