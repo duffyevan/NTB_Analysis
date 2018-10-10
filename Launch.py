@@ -95,7 +95,7 @@ class Main(QObject):
                          spread_sheets[1],
                          posixpath.join(self.folder.outputFolderLocation, plc),
                          posixpath.splitext(posixpath.basename(local_file))[0] + '_analyzed_efficiency',
-                         self.folder.configFile[plc]["specificHeatCapacity"])
+                         float(self.folder.configFile[plc]["specificHeatCapacity"]))
                 os.remove(local_file)
             except KeyError as e:
                 self.progressBarSignal.emit(False)
@@ -164,7 +164,33 @@ class Main(QObject):
 
     ## Analyze all files for a given year
     def analyzeFilesForYear(self):
-        pass
+        self.downloadingSignal.emit(True)
+        selected_plcs = self.getSelectedPLCs()
+        print(selected_plcs)
+        for plc in selected_plcs:
+            try:
+                qdate = self.ui.yearSelector.date()
+                dt = datetime.date(qdate.year(), 1, 1)
+                calc_year = dt.year
+                print(calc_year, dt.year)
+                while dt.year.__eq__(calc_year):
+                    print(dt)
+                    self.doTheThingForDayAndPLC(plc, dt)
+                    dt = dt + datetime.timedelta(1)
+
+            except ftplib.all_errors as e:
+                self.progressBarSignal.emit(False)
+
+                self.showDialogSignal.emit("Error!",
+                                           "An FTP Error Occurred During The Download For " + plc + ". " + str(e))
+                logging.error("An FTP Error Occurred During The Download For " + plc + ". " + str(e))
+
+                self.progressBarSignal.emit(True)
+
+        self.showDialogSignal.emit("Done!", "Analysis Process Is Complete")
+        self.folder.deleteDownloadFolder()
+        logging.info("Analysis Process Is Complete")
+        self.downloadingSignal.emit(False)
 
     ## Iterate through the list of checkboxes and get a list of all those selected
     # @return An array of strings containing the addresses
