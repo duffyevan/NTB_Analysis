@@ -257,35 +257,35 @@ def state2_Prime_Enthalpy_Calc(thermalEnergy, powerConsumption, state1_Enthalpy,
     return h3
 
 
-def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination, resultFileName):
+def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination, resultFileName, HeatCapacityOfFluidBeingHeated):
     rawData = HeatPumpAnalysis(dataSheet)
     numberOfRows = len(rawData.get_col("Datum/Winterzeit"))
 
-    saturated = HeatPumpAnalysis(saturationTable)
+    saturated = HeatPumpAnalysis(saturatedTable)
     numberOfRows1 = len(saturated.get_col("Temperature"))
 
     superheat = HeatPumpAnalysis(superHeatedTable)
     numberOfRows2 = len(superheat.get_col("Temperature"))
 
-    HeatCapacityOfWater = 4.1855
     arrayResults = []
 
     i=0
     while(i < numberOfRows):
         curretRow = rawData.get_row(i)
+        dateTime = curretRow["Datum/Winterzeit"]
 
         if(curretRow["22_Vaufl"] > 0):
             typeOfFlow = curretRow["22_Vaufl"]
             tempOut = curretRow["09_Aaus1"]
+            heatingType = "Water Heater Is Running"
 
         else:
             typeOfFlow = curretRow["21_Vsenke"]
             tempOut = curretRow["01_Saus1"]
+            heatingType = "House Heating Is Running"
 
         if(is_number(curretRow["03_Sein1"]) and is_number(tempOut) and is_number(typeOfFlow) and is_number(curretRow["07_Qein1"]) and is_number(curretRow["27_PelV"])):
-
             if("d10010001" == curretRow["47_Dig"]):
-                dateTime = curretRow["Datum/Winterzeit"]
                 waterInletTemp = float(curretRow["03_Sein1"])/100
                 condenserTemp = waterInletTemp + 20
                 waterOutletTemp = float(tempOut)/100
@@ -293,8 +293,8 @@ def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination
                 airInletTemp = float(curretRow["07_Qein1"])/100
                 evaporatorTemp = airInletTemp - 20
                 compressorPower = float(curretRow["27_PelV"])/1000
-
-                ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
+                
+                ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfFluidBeingHeated)
                 if(ThermalEnergy > 0):
                     state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
                     state2_Result = doubleInterpolation(condenserTemp, "Temperature", state1_Result[3], "Entropy Vapor", "Vapor", 50, superheat, numberOfRows2)
@@ -304,13 +304,30 @@ def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination
                     if(state2_Prime_Enthalpy > state2_Result[2] and state2_Prime_Enthalpy <= 560):
                         state2_Prime_Result = doubleInterpolation(state3_Result[0], "Pressure Vapor", state2_Prime_Enthalpy, "Enthalpy Vapor", "Vapor", 200, superheat, numberOfRows2)
                         preformanceResult = effencisyCalc(state1_Result[2], state2_Result[2], state2_Prime_Result[2], state3_Result[2])
-                        arrayResults.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
-                i +=1
+                        info = "No Errors"
+                        arrayResults.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp, info, heatingType))
+                        i +=1
+                    
+                    else:
+                        info = "Error: State-2' Enthalpy Is Either Less Then State-2 Enthalpy or It Is Too Large"
+                        arrayResults.append((dateTime, tuple(("","","")), state1_Result, state2_Result, tuple(("","", state2_Prime_Enthalpy,"")), state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp, info, heatingType))
+                        i +=1
+
+                else:
+                    info = "Error: Thermal Energy Out Is Negative For Heat Pump"
+                    arrayResults.append((dateTime, tuple(("","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp, info, heatingType))
+                    i +=1
 
             else:
+                info = "Compressor Is Off"
+                arrayResults.append((dateTime, tuple(("","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), "", "", "", "", "", "", "", "", info, ""))
                 i +=1
         else:
+            info = "Sensor Values Not Valid"   
+            arrayResults.append((dateTime, tuple(("","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), "", "", "", "", "", "", "", "", info, ""))
             i +=1
+
+
 
     printToExcel(arrayResults, resultFileDestination, resultFileName)
 
@@ -318,21 +335,35 @@ def dataCalc(dataSheet, saturationTable, superHeatedTable, resultFileDestination
 def printToExcel(arrayOfResults, destination, fileName):
     fileName = fileName + ".xls"
     sizeOfArray = len(arrayOfResults)
-
-    if not posixpath.exists(destination) or not posixpath.isdir(destination):
-        os.makedirs(destination)
-
-    dir_path = posixpath.join(destination, fileName)
+    
+    dir_path = os.path.join(destination, fileName)
     with open(dir_path, "w") as output:
         i = -1
         while(i < sizeOfArray):
             if(i == -1):
-                print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ("Date and Time", "Ideal COP", "Actual COP", "Compressor Efficiency", "State-1 Pressure", "State-1 Temperature", "State-1 Enthalpy", "State-1 Entropy", "State-2 Pressure", "State-2 Temperature", "State-2 Enthalpy", "State-2 Entropy", "State-2' Pressure", "State-2' Temperature", "State-2' Enthalpy", "State-2' Entropy", "State-3 Pressure", "State-3 Temperature", "State-3 Enthalpy", "State-3 Entropy", "State-4 Pressure", "State-4 Temperature", "State-4 Enthalpy", "Water Inlet Temperature", "Water Outlet Temperature","Water Flowrate", "Air Inlet Temperature", "Compressor Power Usage","Calculated Thermal Energy Put Into The Water", "Assumed Temperature Of The Refrigerant Entering Condenser", "Assumed Temperature Of The Refrigerant Entering Evaporator"), file = output)
-                i += 1
+                print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ("Date and Time", "Error Checking", "Heating Method", "Ideal COP", "Actual COP", "Compressor Efficiency", "State-1 Pressure", "State-1 Temperature", "State-1 Enthalpy", "State-1 Entropy", "State-2 Pressure", "State-2 Temperature", "State-2 Enthalpy", "State-2 Entropy", "State-2' Pressure", "State-2' Temperature", "State-2' Enthalpy", "State-2' Entropy", "State-3 Pressure", "State-3 Temperature", "State-3 Enthalpy", "State-3 Entropy", "State-4 Pressure", "State-4 Temperature", "State-4 Enthalpy", "Water Inlet Temperature", "Water Outlet Temperature","Water Flowrate", "Air Inlet Temperature", "Compressor Power Usage","Calculated Thermal Energy Put Into The Water", "Assumed Temperature Of The Refrigerant Entering Condenser", "Assumed Temperature Of The Refrigerant Entering Evaporator"), file = output)
+
             else:
                 data = arrayOfResults[i]
-                print ("%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f" % (str(data[0]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
-                i += 1 
+
+                if(data[15] == "No Errors"):
+                    print ("%s\t%s\t%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f" % (str(data[0]), str(data[15]), str(data[16]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
+
+                elif(data[15] == "Error: State-2' Enthalpy Is Either Less Then State-2 Enthalpy or It Is Too Large"):
+                    print ("%s\t%s\t%s\t%s\t%s\t%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%s\t%s\t%6.2f\t%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f" % (str(data[0]), str(data[15]), str(data[16]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
+
+                elif(data[15] == "Error: Thermal Energy Out Is Negative For Heat Pump"):
+                    print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f" % (str(data[0]), str(data[15]), str(data[16]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
+
+                elif(data[15] == "Compressor Is Off"):
+                    print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (str(data[0]), str(data[15]), str(data[16]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
+                
+                elif(data[15] == "Sensor Values Not Valid"):
+                    print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (str(data[0]), str(data[15]), str(data[16]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
+
+            i += 1
+
+
     output.close()
 
 
