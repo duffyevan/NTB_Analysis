@@ -186,6 +186,7 @@
      <string>Tools</string>
     </property>
     <addaction name="openLogFileButton"/>
+    <addaction name="actionOpen_Analysis_Folder"/>
    </widget>
    <addaction name="menuNTB_Datacollection_Automation"/>
    <addaction name="menuConfiguration"/>
@@ -215,6 +216,11 @@
   <action name="openLogFileButton">
    <property name="text">
     <string>Open Log</string>
+   </property>
+  </action>
+  <action name="actionOpen_Analysis_Folder">
+   <property name="text">
+    <string>Open Analysis Folder</string>
    </property>
   </action>
  </widget>

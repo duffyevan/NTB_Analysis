@@ -103,8 +103,11 @@ class Ui_MainWindow(object):
         self.actionReload_Configuration_File.setObjectName("actionReload_Configuration_File")
         self.openLogFileButton = QtWidgets.QAction(MainWindow)
         self.openLogFileButton.setObjectName("openLogFileButton")
+        self.actionOpen_Analysis_Folder = QtWidgets.QAction(MainWindow)
+        self.actionOpen_Analysis_Folder.setObjectName("actionOpen_Analysis_Folder")
         self.menuConfiguration.addAction(self.openConfFileButton)
         self.menuTools.addAction(self.openLogFileButton)
+        self.menuTools.addAction(self.actionOpen_Analysis_Folder)
         self.menubar.addAction(self.menuNTB_Datacollection_Automation.menuAction())
         self.menubar.addAction(self.menuConfiguration.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
@@ -130,4 +133,5 @@ class Ui_MainWindow(object):
         self.actionSetup_Scheduled_Task.setText(_translate("MainWindow", "Setup Scheduled Task"))
         self.actionReload_Configuration_File.setText(_translate("MainWindow", "Reload Configuration File"))
         self.openLogFileButton.setText(_translate("MainWindow", "Open Log"))
+        self.actionOpen_Analysis_Folder.setText(_translate("MainWindow", "Open Analysis Folder"))
 

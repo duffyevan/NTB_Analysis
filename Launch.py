@@ -37,6 +37,7 @@ class Main(QObject):
         logging.basicConfig(filename=self.log_path, level=logging.INFO, format='%(asctime)s: %(levelname)s : %(message)s')
         #TODO add a log file
         logging.info("Starting...")
+        self.folder = Folder('setup.conf')
 
         try:
             self.HPClient = HostpointClient(loginInfo[0],loginInfo[1],loginInfo[2])
@@ -55,6 +56,11 @@ class Main(QObject):
 
     def open_log_file(self):
         Thread(target=os.system, args=("notepad " + self.log_path,)).start()
+        # os.system("notepad " + config_file_path)
+        # QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
+
+    def open_analysis_folder(self):
+        Thread(target=os.system, args=("explorer " + self.folder.analysisFolderLocation,)).start()
         # os.system("notepad " + config_file_path)
         # QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
@@ -80,21 +86,20 @@ class Main(QObject):
     def analyzeFilesForDay(self):
         self.downloadingSignal.emit(True)
         selected_plcs = self.getSelectedPLCs()
-        f = Folder('setup.conf')
 
         for plc in selected_plcs:
             try:
                 qdate = self.ui.daySelector.date()
                 dt = datetime.date(qdate.year(), qdate.month(), qdate.day())
-                files = self.HPClient.download_files_for_plc_and_day(plc, dt, download_location=f.downloadFolderLocation)
+                files = self.HPClient.download_files_for_plc_and_day(plc, dt, download_location=self.folder.downloadFolderLocation)
                 print(files)
                 for local_file in files:
                     try:
-                        spread_sheets = f.getPLC_tables(plc)
+                        spread_sheets = self.folder.getPLC_tables(plc)
                         dataCalc(local_file,
                                  spread_sheets[0],
                                  spread_sheets[1],
-                                 posixpath.join(f.outputFolderLocation, plc),
+                                 posixpath.join(self.folder.outputFolderLocation, plc),
                                  posixpath.splitext(posixpath.basename(local_file))[0] + '_analyzed_efficiency'
                                  )
                         os.remove(local_file)
@@ -119,7 +124,7 @@ class Main(QObject):
                 self.progressBarSignal.emit(True)
 
         self.showDialogSignal.emit("Done!", "Analysis Process Is Complete")
-        f.deleteDownloadFolder()
+        self.folder.deleteDownloadFolder()
         logging.info("Analysis Process Is Complete")
         self.downloadingSignal.emit(False)
 
@@ -179,7 +184,6 @@ class Main(QObject):
         self.setProgressBarEnabled(starting)
         self.setAllButtonsEnabled(not starting)
 
-
     ## Set up the UI elements and do any needed config setup before starting the UI
     def setup_ui(self):
         logging.debug("Setting Up UI")
@@ -196,6 +200,7 @@ class Main(QObject):
 
         self.ui.openConfFileButton.triggered.connect(self.open_conf_file)
         self.ui.openLogFileButton.triggered.connect(self.open_log_file)
+        self.ui.actionOpen_Analysis_Folder.triggered.connect(self.open_analysis_folder)
 
         self.checkBoxes.clear()
 
