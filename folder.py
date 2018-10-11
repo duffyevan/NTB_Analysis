@@ -61,9 +61,3 @@ class Folder:
     ## Delete the temporary downloads folder.
     def deleteDownloadFolder(self):
         rmtree(self.downloadFolderLocation)
-
-
-
-
-if __name__ == '__main__':
-    f = Folder('setup.conf')

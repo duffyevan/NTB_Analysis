@@ -128,11 +128,3 @@ class HostpointClient:
     # @returns a list of file names representing the .xls files on the remote server
     def list_files(self):
         return [f for f in self.client.nlst() if '.xls' in f]  # doing this is called a 'list comprehension'
-
-
-
-if __name__ == '__main__':
-    # Testing!!
-    loginInfo = open('login.csv').readlines()[1].strip().split(',')
-    h = HostpointClient(loginInfo[0], loginInfo[1], loginInfo[2])
-    print(h.download_files_for_plc_and_day('F001',date.today() - timedelta(days=3)))

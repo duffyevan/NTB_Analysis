@@ -6,7 +6,7 @@ from HostpointLib import HostpointClient
 
 
 
-## Checks to see if a given number is a number and not a string. 
+## Checks to see if a given number is a number and not a string.
 # @param n {} Number or a string.
 # @return A boolean true if it is a number, else false.
 def is_number(n):
@@ -42,7 +42,7 @@ def singleInterpolation(constantVal1, constantVal1Title, typeOf, table, numberOf
     pressure = "Pressure " + typeOf
     enthalpy = "Enthalpy " + typeOf
     entropy = "Entropy " + typeOf
-    
+
     i = 0
     while(i < numberOfRows):
         currentRow = table.get_row(i)
@@ -52,7 +52,7 @@ def singleInterpolation(constantVal1, constantVal1Title, typeOf, table, numberOf
             i += 1
 
         elif(float(currentRow[constantVal1Title]) == float(constantVal1)):
-                
+
             if(constantVal1Title == pressure):
                 pI1 = float(constantVal1)
             else:
@@ -87,17 +87,17 @@ def singleInterpolation(constantVal1, constantVal1Title, typeOf, table, numberOf
         pI1 = float(constantVal1)
     else:
         pI1 = interpolation(float(minValues[constantVal1Title]), float(minValues[pressure]), float(constantVal1), float(higherValuePoints[constantVal1Title]), float(higherValuePoints[pressure]))
-   
+
     if(constantVal1Title == "Temperature"):
         tI1 = float(constantVal1)
     else:
         tI1 = interpolation(float(minValues[constantVal1Title]), float(minValues["Temperature"]), float(constantVal1), float(higherValuePoints[constantVal1Title]), float(higherValuePoints["Temperature"]))
-    
+
     if(constantVal1Title == enthalpy):
         hI1 = float(constantVal1)
     else:
         hI1 = interpolation(float(minValues[constantVal1Title]), float(minValues[enthalpy]), float(constantVal1), float(higherValuePoints[constantVal1Title]), float(higherValuePoints[enthalpy]))
-    
+
     if(constantVal1Title == entropy):
         sI1 = float(constantVal1)
     else:
@@ -127,7 +127,7 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
     #Set the upper and lower search limit the first constant
     upperLimit = float(constantVal1 + varianceRange)
     lowerLimit = float(constantVal1 - varianceRange)
-    
+
     #Initialize variables
     curretRow = table.get_row(0)
     nextRow = table.get_row(1)
@@ -168,7 +168,7 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
                         sI1 = float(constantVal2)
                     else:
                         sI1 = interpolation(float(curretRow[constantVal2Title]), float(curretRow[entropy]), float(constantVal2), float(nextRow[constantVal2Title]), float(nextRow[entropy]))
-                    
+
                     arrayI1Values.append((pI1,tI1,hI1,sI1))
 
             curretRow = nextRow
@@ -189,10 +189,10 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
 
             if(constantVal1Title == "Temperature"):
                 C =  float(thermoPoints[1])
-            
+
             if(constantVal1Title == enthalpy):
                 C =  float(thermoPoints[2])
-            
+
             if(constantVal1Title == entropy):
                 C =  float(thermoPoints[3])
 
@@ -205,7 +205,7 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
                     C1min = C
                     thermoPointsMin = thermoPoints
 
-            
+
             elif(C >= float(constantVal1)):
                     if(C1max == float(constantVal1)):
                         C1max = C
@@ -285,7 +285,7 @@ def thermalEnergyCalc(flowrate, coldTemp, hotTemp, Cp):
     f = flowrate * 0.017
     c = coldTemp + 273.4
     h = hotTemp + 273.4
-    
+
     return (f * Cp * (h - c))
 
 
@@ -347,7 +347,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
                 airInletTemp = float(curretRow["07_Qein1"])/100
                 evaporatorTemp = airInletTemp - 20
                 compressorPower = float(curretRow["27_PelV"])/1000
-                
+
                 ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfFluidBeingHeated)
                 if(ThermalEnergy > 0):
                     state1_Result = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
@@ -361,7 +361,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
                         info = "No Errors"
                         arrayResults.append((dateTime, preformanceResult, state1_Result, state2_Result, state2_Prime_Result, state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp, info, heatingType))
                         i +=1
-                    
+
                     else:
                         info = "Error: State-2' Enthalpy Is Either Less Then State-2 Enthalpy or It Is Too Large"
                         arrayResults.append((dateTime, tuple(("","","")), state1_Result, state2_Result, tuple(("","", state2_Prime_Enthalpy,"")), state3_Result, state4_Result, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp, info, heatingType))
@@ -377,7 +377,7 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
                 arrayResults.append((dateTime, tuple(("","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), "", "", "", "", "", "", "", "", info, ""))
                 i +=1
         else:
-            info = "Sensor Values Not Valid"   
+            info = "Sensor Values Not Valid"
             arrayResults.append((dateTime, tuple(("","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), tuple(("","","","")), "", "", "", "", "", "", "", "", info, ""))
             i +=1
 
@@ -415,7 +415,7 @@ def printToExcel(arrayOfResults, destination, fileName):
 
                 elif(data[15] == "Compressor Is Off"):
                     print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (str(data[0]), str(data[15]), str(data[16]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
-                
+
                 elif(data[15] == "Sensor Values Not Valid"):
                     print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (str(data[0]), str(data[15]), str(data[16]), data[1][0], data[1][1], data[1][2], data[2][0], data[2][1], data[2][2], data[2][3], data[3][0], data[3][1], data[3][2], data[3][3], data[4][0], data[4][1], data[4][2], data[4][3], data[5][0], data[5][1], data[5][2], data[5][3], data[6][0], data[6][1], data[6][2], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]), file = output)
 
@@ -423,23 +423,3 @@ def printToExcel(arrayOfResults, destination, fileName):
 
 
     output.close()
-
-
-
-
-
-if __name__ == '__main__':
-
-    with open('me-program/login.csv','r') as login:
-        login_info = login.readlines()[1].strip().split(',')
-        hpclient = HostpointClient(login_info[0],login_info[1],login_info[2])
-        remote_files = [f for f in hpclient.ls() if '.xls' in f]
-    for remote_file in remote_files:
-        hpclient.download_file(remote_file, download_location='./Files/')
-        local_file = posixpath.join('./Files', remote_file)
-        print(local_file)
-        output_file = posixpath.splitext(remote_file)[0] + '_output'
-        print('Output File: ' + output_file)
-
-        dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file, 4.814)
-        os.remove(local_file)
