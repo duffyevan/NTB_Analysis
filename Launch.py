@@ -84,7 +84,8 @@ class Main(QObject):
     def showDialog(self, title, message):
         QMessageBox.about(self.window, title, message)
 
-    def doTheThingForDayAndPLC(self, plc, dt):
+
+    def analyzeFilesForDayAndPLC(self, plc, dt):
         files = self.HPClient.download_files_for_plc_and_day(plc, dt,
                                                              download_location=self.folder.downloadFolderLocation)
         print(files)
@@ -122,7 +123,7 @@ class Main(QObject):
             try:
                 qdate = self.ui.daySelector.date()
                 dt = datetime.date(qdate.year(), qdate.month(), qdate.day())
-                self.doTheThingForDayAndPLC(plc, dt)
+                self.analyzeFilesForDayAndPLC(plc, dt)
 
             except ftplib.all_errors as e:
                 self.progressBarSignal.emit(False)
@@ -154,7 +155,7 @@ class Main(QObject):
                 calc_month = dt.month
                 while dt.month is calc_month:
                     print(dt)
-                    self.doTheThingForDayAndPLC(plc, dt)
+                    self.analyzeFilesForDayAndPLC(plc, dt)
                     dt = dt + datetime.timedelta(1)
 
             except ftplib.all_errors as e:
@@ -188,7 +189,7 @@ class Main(QObject):
                 print(calc_year, dt.year)
                 while dt.year.__eq__(calc_year):
                     print(dt)
-                    self.doTheThingForDayAndPLC(plc, dt)
+                    self.analyzeFilesForDayAndPLC(plc, dt)
                     dt = dt + datetime.timedelta(1)
 
             except ftplib.all_errors as e:
