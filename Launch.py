@@ -275,6 +275,8 @@ class Main(QObject):
         self.ui.openLogFileButton.triggered.connect(self.open_log_file)
         self.ui.actionOpen_Analysis_Folder.triggered.connect(self.open_analysis_folder)
 
+        self.ui.actionQuit.triggered.connect(exit)
+
         self.checkBoxes.clear()
 
         self.ui.scrollArea.setWidgetResizable(True)
