@@ -6,12 +6,15 @@ from shutil import rmtree
 
 
 class Folder:
+
     ## Checks to see of the given path is valid on the local PC storage. If it is not, then it creates the path and folders.
     # @param destination {string} Path to the directory on the local storage
     def path_exist(self, destination):
         if not os.path.exists(destination):
             os.makedirs(destination)
 
+    ## Uses the configuration file to configure all the folder paths.
+    # @param config_file_path {string} Path to the configuration file.
     def __init__(self, config_file_path):
         self.configFile = ConfigParser()
         self.configFile.read(config_file_path)
@@ -24,6 +27,7 @@ class Folder:
 
         self.foldersSetup()
 
+    ## Sets up the folders.
     def foldersSetup(self):
         self.path_exist(self.analysisFolderLocation)
         self.path_exist(self.downloadFolderLocation)
@@ -31,6 +35,8 @@ class Folder:
         self.path_exist(self.saturationTableFolder)
         self.path_exist(self.superheatedTableFolder)
 
+    ## Reads in a PLC number and finds the corresponding attributes needed for analyzation.
+    # @param PLC_number {string} PLC number.
     def getPLC_tables(self, PLC_number):
         saturationTableName = self.configFile[PLC_number]['saturationTable']
         saturationTableFolder = self.saturationTableFolder
@@ -42,28 +48,22 @@ class Folder:
 
         return (saturationTablePath, superheatedTablePath)
 
+
+    ## Finds the PLC number from the given data file name.
+    # @param file {string} Path of the data file.
+    # @param numberOfFirstCharacters {number} How many characters of a string need to be kept starting from the first character in the string.
     def get_PLC_Name(self, file, numberOfFirstCharacters):
         nameOfFile = ntpath.basename(file)
         PLC_number = nameOfFile[:numberOfFirstCharacters]
         return PLC_number
 
+
+    ## Delete the temporary downloads folder.
     def deleteDownloadFolder(self):
         rmtree(self.downloadFolderLocation)
 
+
+
+
 if __name__ == '__main__':
-    # setup reading the config file
     f = Folder('setup.conf')
-    # f.cleanFolder()
-    # f.foldersSetup()
-    # tablePaths = f.getPLC_tables('F001')
-    # print(tablePaths[0])
-    # print(tablePaths[1])
-    # PLCnumber = f.get_PLC_Name("C:\\Users\\c-patel\\Desktop\\MQP\\me-program\\Files\\F001\\Files\\F001_20180829_000002"
-    #                            ".xls", 4)
-    # print(PLCnumber)
-
-    # if(os.path.exists(tablePaths[0])):
-    #     print("saturation file exists")
-
-    # if(os.path.exists(tablePaths[1])):
-    #     print("superheated file exists")

@@ -5,6 +5,10 @@ from Analysis import HeatPumpAnalysis
 from HostpointLib import HostpointClient
 
 
+
+## Checks to see if a given number is a number and not a string. 
+# @param n {} Number or a string.
+# @return A boolean true if it is a number, else false.
 def is_number(n):
     try:
         float(n)   # Type-casting the string to `float`.
@@ -15,11 +19,25 @@ def is_number(n):
     return True
 
 
+## Interpolates with the given values to find the desired coordinate value.
+# @param x1 {number} First x coordinate value.
+# @param y1 {number} First y coordinate value of the corresponding first x value.
+# @param x2 {number} X coordinate value of the desired result.
+# @param x3 {number} Third x coordinate value.
+# @param y3 {number} Third y coordinate value of the corresponding third x value.
+# @return The unknown value at the desired coordinate.
 def interpolation(x1, y1, x2, x3, y3):
     y2 = (((x2-x1)*(y3-y1))/(x3-x1))+y1
     return y2
 
 
+## Does a single interpolation for all other thermodynamic properties for the desired thermodynamic property value.
+# @param constantVal1 {number} Desired thermodynamic property value.
+# @param constantVal1Title {string} Table title for the desired thermodynamic property.
+# @param typeOf {string} Type of thermodynamic properties looked for, "Liquid" state properties or "Vapor" state properties.
+# @param table {table} Thermodynamic properties table used, which could either be a saturation table or a superheated table.
+# @param numberOfRows {number} number of rows in the given thermodynamic properties table.
+# @return The other unknown thermodynamic properties for the desired thermodynamic property value.
 def singleInterpolation(constantVal1, constantVal1Title, typeOf, table, numberOfRows):
     pressure = "Pressure " + typeOf
     enthalpy = "Enthalpy " + typeOf
@@ -88,6 +106,16 @@ def singleInterpolation(constantVal1, constantVal1Title, typeOf, table, numberOf
     return (pI1,tI1,hI1,sI1)
 
 
+## Does a double interpolation for all other thermodynamic properties using the two desired thermodynamic property values.
+# @param constantVal1 {number} First desired thermodynamic property value.
+# @param constantVal1Title {string} Table title for the first desired thermodynamic property.
+# @param constantVal2 {number} Second desired thermodynamic property value.
+# @param constantVal2Title {string} Table title for the second desired thermodynamic property.
+# @param typeOf {string} Type of thermodynamic properties looked for, "Liquid" state properties or "Vapor" state properties.
+# @param varianceRange {number} The range at which thermodynamic properties will be recorded away from the first desired thermodynamic property value, plus and minus.
+# @param table {table} Thermodynamic properties table used, which could either be a saturation table or a superheated table.
+# @param numberOfRows {number} number of rows in the given thermodynamic properties table.
+# @return The other unknown thermodynamic properties for the desired two thermodynamic property values.
 def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantVal2Title, typeOf, varianceRange, table, numberOfRows):
     pressure = "Pressure " + typeOf
     enthalpy = "Enthalpy " + typeOf
@@ -234,6 +262,12 @@ def doubleInterpolation(constantVal1, constantVal1Title, constantVal2, constantV
     return (pI2,tI2,hI2,sI2)
 
 
+## Calculates the coefficient of performances of the system and the efficiency of the compressor.
+# @param state1_Enthalpy {number} Enthalpy value at state one.
+# @param state2_Enthalpy {number} Enthalpy value at state two.
+# @param state2_Prime_Enthalpy {number} Enthalpy value at state two prime.
+# @param state3_Enthalpy {number} Enthalpy value at state three.
+# @return The values of the calculated coefficient of performances and compressor efficiency.
 def effencisyCalc(state1_Enthalpy, state2_Enthalpy, state2_Prime_Enthalpy, state3_Enthalpy):
     COP_I = (state2_Enthalpy - state3_Enthalpy)/(state2_Enthalpy - state1_Enthalpy)
     COP_A = (state2_Prime_Enthalpy - state3_Enthalpy)/(state2_Prime_Enthalpy - state1_Enthalpy)
@@ -241,6 +275,12 @@ def effencisyCalc(state1_Enthalpy, state2_Enthalpy, state2_Prime_Enthalpy, state
     return (COP_I, COP_A, n_Compressor)
 
 
+## Calculates the amount of thermal energy dissipated at the condenser.
+# @param flowrate {number} Flow rate of the fluid that needs heating in l/min.
+# @param coldTemp {number} Temperature of the fluid entering the condenser that needs heating in degree C.
+# @param hotTemp {number} Temperature of the fluid exiting the condenser that needs heating in degree C.
+# @param Cp {number} Specific heat capacity value of the fluid that needs heating in kJ per kg per degree kelvin.
+# @return The amount of thermal energy dissipated at the condenser in kW.
 def thermalEnergyCalc(flowrate, coldTemp, hotTemp, Cp):
     f = flowrate * 0.017
     c = coldTemp + 273.4
@@ -249,11 +289,24 @@ def thermalEnergyCalc(flowrate, coldTemp, hotTemp, Cp):
     return (f * Cp * (h - c))
 
 
+## Calculate the enthalpy value at state two prime.
+# @param thermalEnergy {number} The amount of thermal energy dissipated at the condenser in kW.
+# @param powerConsumption {number} Electrical power consumed by the compressor in kW.
+# @param state1_Enthalpy {number} Enthalpy value at state one.
+# @param state3_Enthalpy {number} Enthalpy value at state three.
+# @return Enthalpy value at state two prime.
 def state2_Prime_Enthalpy_Calc(thermalEnergy, powerConsumption, state1_Enthalpy, state3_Enthalpy):
     h3 = float(((thermalEnergy * state1_Enthalpy) - (powerConsumption * state3_Enthalpy))/(thermalEnergy - powerConsumption))
     return h3
 
 
+## Finds the thermodynamic properties for all the states, one through four, along with the performance of the system.
+# @param dataSheet {table} Data table that needs to analyzed with sensor measurements.
+# @param saturatedTable {table} Saturation table of the given refrigerant type.
+# @param superHeatedTable {number} Superheated vapor table of the given refrigerant type.
+# @param resultFileDestination {string} Path of where the produced excel file will be placed with all the thermodynamic data.
+# @param resultFileName {string} Name of the produced excel file.
+# @param HeatCapacityOfFluidBeingHeated {number} Specific heat capacity value of the fluid that needs heating in kJ per kg per degree kelvin.
 def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination, resultFileName, HeatCapacityOfFluidBeingHeated):
 
     if not posixpath.exists(resultFileDestination):
@@ -333,6 +386,10 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
     printToExcel(arrayResults, resultFileDestination, resultFileName)
 
 
+## Produces the excel file at the given location and writes the given results to it.
+# @param arrayOfResults {array[results]} Array with the results for each data point in the given data table.
+# @param destination {string} Path of where the produced excel file will be placed with all the thermodynamic data.
+# @param fileName {string} Name of the produced excel file.
 def printToExcel(arrayOfResults, destination, fileName):
     fileName = fileName + ".xls"
     sizeOfArray = len(arrayOfResults)
@@ -369,134 +426,11 @@ def printToExcel(arrayOfResults, destination, fileName):
 
 
 
-#Calculate for test bench
-def dataCalc_TestBench(dataSheet, saturationTable, superHeatedTable, resultFileDestination, resultFileName):
-    rawData = HeatPumpAnalysis(dataSheet)
-    numberOfRows = len(rawData.get_col("Zeit"))
 
-    saturated = HeatPumpAnalysis(saturationTable)
-    numberOfRows1 = len(saturated.get_col("Temperature"))
-
-    superheat = HeatPumpAnalysis(superHeatedTable)
-    numberOfRows2 = len(superheat.get_col("Temperature"))
-
-    HeatCapacityOfWater = 4.1855
-    arrayResults1 = []
-    arrayResults2 = []
-
-    i=0
-    while(i < numberOfRows):
-        curretRow = rawData.get_row(i)
-
-        dateTime = curretRow["Zeit"]
-        waterInletTemp = float(curretRow["T_Wasser_Vorlauf"])
-        waterOutletTemp = float(curretRow["T_Wasser_Ruecklauf"])
-        waterFlowRate = float(curretRow["V_dot_Wasser"])
-        airInletTemp = float(curretRow["T_luft_ein"])
-        compressorPower = float(curretRow["P_elek_Verdichter"])/1000
-
-        condenserTemp = waterInletTemp + 20
-        evaporatorTemp = airInletTemp - 20
-
-        tempAtState1 = float(curretRow["T_ueberhitzt"])
-        pressureAtState1 = float(curretRow["p_Verdampfung"]) * 100
-        pressureAtState2 = float(curretRow["p_Kondenation"]) * 100
-        
-        ThermalEnergy = thermalEnergyCalc(waterFlowRate, waterInletTemp, waterOutletTemp, HeatCapacityOfWater)
-
-        if(ThermalEnergy > 0 and pressureAtState1 < pressureAtState2 and pressureAtState1 < 850):
-            state1_Result1 = singleInterpolation(evaporatorTemp, "Temperature", "Vapor", saturated, numberOfRows1)
-            state1_Result2 = doubleInterpolation(pressureAtState1, "Pressure Vapor", tempAtState1, "Temperature", "Vapor", 100, superheat, numberOfRows2)
-
-            state2_Result1 = doubleInterpolation(condenserTemp, "Temperature", state1_Result1[3], "Entropy Vapor", "Vapor", 50, superheat, numberOfRows2)
-            state2_Result2 = doubleInterpolation(pressureAtState2, "Pressure Vapor", state1_Result2[3], "Entropy Vapor", "Vapor", 200, superheat, numberOfRows2)
-
-            state3_Result1 = singleInterpolation(state2_Result1[0], "Pressure Liquid", "Liquid", saturated, numberOfRows1)
-            state3_Result2 = singleInterpolation(pressureAtState2, "Pressure Liquid", "Liquid", saturated, numberOfRows1)
-
-            state4_Result1 = (state1_Result1[0], state1_Result1[1], state3_Result1[2], "Not Found")
-            state4_Result2 = (state1_Result2[0], state1_Result2[1], state3_Result2[2], "Not Found")
-
-            state2_Prime_Enthalpy1 = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result1[2], state3_Result1[2])
-            state2_Prime_Enthalpy2 = state2_Prime_Enthalpy_Calc(ThermalEnergy, compressorPower, state1_Result2[2], state3_Result2[2])
-
-            if(state2_Prime_Enthalpy1 > state2_Result1[2] and state2_Prime_Enthalpy1 <= 560 and state2_Prime_Enthalpy2 > state2_Result2[2] and state2_Prime_Enthalpy2 <= 560):
-
-                state2_Prime_Result1 = doubleInterpolation(state3_Result1[0], "Pressure Vapor", state2_Prime_Enthalpy1, "Enthalpy Vapor", "Vapor", 200, superheat, numberOfRows2)
-                state2_Prime_Result2 = doubleInterpolation(pressureAtState2, "Pressure Vapor", state2_Prime_Enthalpy2, "Enthalpy Vapor", "Vapor", 200, superheat, numberOfRows2)
-
-                preformanceResult1 = effencisyCalc(state1_Result1[2], state2_Result1[2], state2_Prime_Result1[2], state3_Result1[2])
-                preformanceResult2 = effencisyCalc(state1_Result2[2], state2_Result2[2], state2_Prime_Result2[2], state3_Result2[2])
-
-                arrayResults1.append((dateTime, preformanceResult1, state1_Result1, state2_Result1, state2_Prime_Result1, state3_Result1, state4_Result1, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, condenserTemp, evaporatorTemp))
-                arrayResults2.append((dateTime, preformanceResult2, state1_Result2, state2_Result2, state2_Prime_Result2, state3_Result2, state4_Result2, waterInletTemp, waterOutletTemp, waterFlowRate, airInletTemp, compressorPower, ThermalEnergy, tempAtState1, pressureAtState2))
-        i +=1
-
-    printToExcel_TestBench(arrayResults1, arrayResults2, resultFileDestination, resultFileName)
-
-
-def printToExcel_TestBench(arrayOfResults1, arrayOfResults2, destination, fileName):
-    fileName = fileName + ".xls"
-
-    sizeOfArray = len(arrayOfResults1)
-    sizeOfArray2 = len(arrayOfResults2)
-
-    if(sizeOfArray == sizeOfArray2):
-        dir_path = posixpath.join(destination, fileName)
-        with open(dir_path, "w") as output:
-            i = -1
-            while(i < sizeOfArray and i < sizeOfArray2):
-                if(i == -1):
-                    print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ("Date and Time", "Ideal COP (Assumed)", "Ideal COP (Measured)", "Actual COP (Assumed)", "Actual COP (Measured)", "Compressor Efficiency (Assumed)", "Compressor Efficiency (Measured)", "State-1 Pressure (Assumed)", "State-1 Pressure (Measured)", "State-1 Temperature (Assumed)", "State-1 Temperature (Measured)", "State-1 Enthalpy (Assumed)", "State-1 Enthalpy (Measured)", "State-1 Entropy (Assumed)", "State-1 Entropy (Measured)", "State-2 Pressure (Assumed)", "State-2 Pressure (Measured)", "State-2 Temperature (Assumed)", "State-2 Temperature (Measured)", "State-2 Enthalpy (Assumed)", "State-2 Enthalpy (Measured)", "State-2 Entropy (Assumed)", "State-2 Entropy (Measured)", "State-2' Pressure (Assumed)", "State-2' Pressure (Measured)", "State-2' Temperature (Assumed)", "State-2' Temperature (Measured)", "State-2' Enthalpy (Assumed)", "State-2' Enthalpy (Measured)", "State-2' Entropy (Assumed)", "State-2' Entropy (Measured)", "State-3 Pressure (Assumed)", "State-3 Pressure (Measured)", "State-3 Temperature (Assumed)", "State-3 Temperature (Measured)", "State-3 Enthalpy (Assumed)", "State-3 Enthalpy (Measured)", "State-3 Entropy (Assumed)", "State-3 Entropy (Measured)", "State-4 Pressure (Assumed)", "State-4 Pressure (Measured)", "State-4 Temperature (Assumed)", "State-4 Temperature (Measured)", "State-4 Enthalpy (Assumed)", "State-4 Enthalpy (Measured)", "Water Inlet Temperature", "Water Outlet Temperature","Water Flowrate", "Air Inlet Temperature", "Compressor Power Usage","Calculated Thermal Energy Put Into The Water", "Assumed Temperature Of The Refrigerant Entering Condenser", "Measured State 2 Pressure", "Assumed Temperature Of The Refrigerant Entering Evaporator", "Measured State 1 Temperature"), file = output)
-                    i += 1
-                else:
-                    data1 = arrayOfResults1[i]
-                    data2 = arrayOfResults2[i]
-
-                    print ("%s\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f" % (str(data1[0]), data1[1][0], data2[1][0], data1[1][1], data2[1][1], data1[1][2], data2[1][2], data1[2][0], data2[2][0], data1[2][1], data2[2][1], data1[2][2], data2[2][2], data1[2][3], data2[2][3], data1[3][0], data2[3][0], data1[3][1], data2[3][1], data1[3][2], data2[3][2], data1[3][3], data2[3][3], data1[4][0], data2[4][0], data1[4][1], data2[4][1], data1[4][2], data2[4][2], data1[4][3], data2[4][3], data1[5][0], data2[5][0], data1[5][1], data2[5][1], data1[5][2], data2[5][2], data1[5][3], data2[5][3], data1[6][0], data2[6][0], data1[6][1], data2[6][1], data1[6][2], data2[6][2], data1[7], data1[8], data1[9], data1[10], data1[11], data1[12], data1[13], data2[13], data1[14], data2[14]), file = output)
-                i += 1 
-        output.close()
-
-
-
-
-
-
-#dataCalc("D:\\reposatory\\me-program\\Files\\F001\\Files\\F001_20180829_000002 - Copy.xls", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Properties Tables\\R410a Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\F001\\Results", "output.xls")
-
-# dataCalc_TestBench("D:\\reposatory\\me-program\\Files\\Test_Bench\\Files\\Test Bench Data Collection 1.xls", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Saturation Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Properties Tables\\R407c Superheated Table.txt", "D:\\reposatory\\me-program\\Files\\Test_Bench\\Results", "output1.xls")
-
-# with open('login.csv','r') as login:
-#     login_info = login.readlines()[0].strip().split(',')
-#     webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
-#
-# for remote_file in webdav.list_backed_up_files():
-#     webdav.download_file(remote_file, download_location='./Files')
-#     local_file = posixpath.join('./Files', remote_file)
-#     output_file = posixpath.splitext(remote_file)[0] + '_output'
-#     print('Output File: ' + output_file)
-#
-#     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
-#     os.remove(local_file)
-
-
-# with open('login.csv','r') as login:
-#     login_info = login.readlines()[0].strip().split(',')
-#     webdav = NTBWebdav(login_info[0],login_info[1],login_info[2])
-#
-# for remote_file in os.listdir('./TestFiles'):
-#     # webdav.download_file(remote_file, download_location='./Files')
-#     copyfile(posixpath.join('./TestFiles', remote_file), posixpath.join('./Files', remote_file))
-#     local_file = posixpath.join('./Files', remote_file)
-#     output_file = posixpath.splitext(remote_file)[0] + '_output'
-#     print('Output File: ' + output_file)
-#
-#     dataCalc(local_file, "./Files/Test_Bench/Properties Tables/R407c Saturation Table.txt", "./Files/Test_Bench/Properties Tables/R407c Superheated Table.txt",'./Files/F001/Results',output_file)
-#     os.remove(local_file)
 
 if __name__ == '__main__':
 
-    with open('login.csv','r') as login:
+    with open('me-program/login.csv','r') as login:
         login_info = login.readlines()[1].strip().split(',')
         hpclient = HostpointClient(login_info[0],login_info[1],login_info[2])
         remote_files = [f for f in hpclient.ls() if '.xls' in f]

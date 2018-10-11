@@ -55,6 +55,7 @@ class Main(QObject):
         os.system("notepad " + config_file_path)
         QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
+    ## Opens the log file in Notepad so the user can view it.
     def open_log_file(self):
         Thread(target=os.system, args=("notepad " + self.log_path,)).start()
         # os.system("notepad " + config_file_path)
