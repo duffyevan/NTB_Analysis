@@ -51,21 +51,16 @@ class Main(QObject):
 
     ## Opens the configuration in Notepad so the user can edit it.
     def open_conf_file(self):
-        # Thread(target=os.system, args=("notepad " + config_file_path,)).start()
         os.system("notepad " + config_file_path)
         QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
     ## Opens the log file in Notepad so the user can view it.
     def open_log_file(self):
         Thread(target=os.system, args=("notepad " + self.log_path,)).start()
-        # os.system("notepad " + config_file_path)
-        # QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
-    ## Opens windows explorer for the analysis folder so the user can view it.
+    ## Opens windows explorer for the analysis folder so the user can view it. 
     def open_analysis_folder(self):
         Thread(target=os.system, args=("explorer " + self.folder.analysisFolderLocation,)).start()
-        # os.system("notepad " + config_file_path)
-        # QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
     ## Threaded option for Analyze for day
     def threadAnalyzeForDay(self):
