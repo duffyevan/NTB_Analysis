@@ -10,9 +10,9 @@ from typing import List
 from PyQt5.QtCore import QDate, pyqtSignal, QObject
 from PyQt5.QtWidgets import QApplication, QMainWindow, QCheckBox, QMessageBox, QWidget, QVBoxLayout
 
-from Functions import dataCalc
+from Analyzer import dataCalc
 from HostpointLib import HostpointClient
-from folder import Folder
+from Organizer import Folder
 from frontend.mainwindow import Ui_MainWindow
 
 config_file_path = './setup.conf'

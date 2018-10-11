@@ -1,13 +1,13 @@
 import os
 import posixpath
 
-from Analysis import HeatPumpAnalysis
+from HeatPumpReadout import HeatPumpReadout
 from HostpointLib import HostpointClient
-from Functions import thermalEnergyCalc
-from Functions import singleInterpolation
-from Functions import doubleInterpolation
-from Functions import state2_Prime_Enthalpy_Calc
-from Functions import effencisyCalc
+from Analyzer import thermalEnergyCalc
+from Analyzer import singleInterpolation
+from Analyzer import doubleInterpolation
+from Analyzer import state2_Prime_Enthalpy_Calc
+from Analyzer import effencisyCalc
 
 
 ## Finds the thermodynamic properties for all the states, one through four, along with the performance of the system  with actual measurements and assumed values.
@@ -18,13 +18,13 @@ from Functions import effencisyCalc
 # @param resultFileName {string} Name of the produced excel file.
 # @param HeatCapacityOfFluidBeingHeated {number} Specific heat capacity value of the fluid that needs heating in kJ per kg per degree kelvin.
 def dataCalc_TestBench(dataSheet, saturationTable, superHeatedTable, resultFileDestination, resultFileName):
-    rawData = HeatPumpAnalysis(dataSheet)
+    rawData = HeatPumpReadout(dataSheet)
     numberOfRows = len(rawData.get_col("Zeit"))
 
-    saturated = HeatPumpAnalysis(saturationTable)
+    saturated = HeatPumpReadout(saturationTable)
     numberOfRows1 = len(saturated.get_col("Temperature"))
 
-    superheat = HeatPumpAnalysis(superHeatedTable)
+    superheat = HeatPumpReadout(superHeatedTable)
     numberOfRows2 = len(superheat.get_col("Temperature"))
 
     HeatCapacityOfWater = 4.1855

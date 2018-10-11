@@ -33,7 +33,7 @@ the `Setup` folder.
 ?
 ?
 ### Configuring The Program
-Before running the program, you must first configure the settings. In the User directory, create `login.csv`. 
+Before running the program, you must first configure the settings. In the project directory, create `login.csv`. 
 Fill in the following section:
 1. __HOSTPOINT__: The hostname, username and password must be set to those of the HostPoint FTP client so that the 
 upload can be done automatically (Note: The GUI program will not automatically upload to HostPoint).

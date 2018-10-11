@@ -1,7 +1,7 @@
 import os
 import posixpath
 
-from Analysis import HeatPumpAnalysis
+from HeatPumpReadout import HeatPumpReadout
 from HostpointLib import HostpointClient
 
 
@@ -312,13 +312,13 @@ def dataCalc(dataSheet, saturatedTable, superHeatedTable, resultFileDestination,
     if not posixpath.exists(resultFileDestination):
         os.makedirs(resultFileDestination)
 
-    rawData = HeatPumpAnalysis(dataSheet)
+    rawData = HeatPumpReadout(dataSheet)
     numberOfRows = len(rawData.get_col("Datum/Winterzeit"))
 
-    saturated = HeatPumpAnalysis(saturatedTable)
+    saturated = HeatPumpReadout(saturatedTable)
     numberOfRows1 = len(saturated.get_col("Temperature"))
 
-    superheat = HeatPumpAnalysis(superHeatedTable)
+    superheat = HeatPumpReadout(superHeatedTable)
     numberOfRows2 = len(superheat.get_col("Temperature"))
 
     arrayResults = []
