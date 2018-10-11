@@ -61,6 +61,7 @@ class Main(QObject):
         # os.system("notepad " + config_file_path)
         # QMessageBox.about(self.window, "Notice", "Please Restart The Program For Changes To Take Effect")
 
+    ## Opens windows explorer for the analysis folder so the user can view it.
     def open_analysis_folder(self):
         Thread(target=os.system, args=("explorer " + self.folder.analysisFolderLocation,)).start()
         # os.system("notepad " + config_file_path)
@@ -84,7 +85,9 @@ class Main(QObject):
     def showDialog(self, title, message):
         QMessageBox.about(self.window, title, message)
 
-
+    ## As the name states
+    # @param plc The name of PLC in F00x Format
+    # @param dt The datetime.date representing the date to get the files for
     def analyzeFilesForDayAndPLC(self, plc, dt):
         files = self.HPClient.download_files_for_plc_and_day(plc, dt,
                                                              download_location=self.folder.downloadFolderLocation)
@@ -301,7 +304,7 @@ class Main(QObject):
         self.downloadingSignal.connect(self.prepareForDownload)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # This main is required to start the UI
     main = Main()
     app = QApplication(sys.argv)
     main.window = QMainWindow()

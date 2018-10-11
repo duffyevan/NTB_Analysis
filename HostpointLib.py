@@ -6,11 +6,11 @@ import os
 
 
 class HostpointClient:
+
     ## The Constructor
     # @param hostname {string} hostname of the HostPoint ftp server
     # @param username {string} username for the HostPoint ftp server
     # @param password {string} password for said user
-
     def __init__(self, hostname, username, password):
         self.client = FTP(hostname)
         self.client.login(username, password)
@@ -18,13 +18,16 @@ class HostpointClient:
 
     ## Upload a single file from the local storage to the FTP server
     # @param filename {string} Path to the file on the local storage to upload
-
     def upload_file(self, filename):
         logging.info("Uploading " + filename)
         file = open(filename, 'rb')
         self.client.storbinary('STOR %s' % posixpath.basename(filename), file)
         file.close()
 
+    ## Downloads a single file
+    # @param remote_file The path on the remote server to the file
+    # @param download_location The path to the folder where the file should be put
+    # @returns The path to the newly downloaded local file
     def download_file(self, remote_filename, download_location='./'):
         logging.info("Downloading %s to %s" % (remote_filename, download_location))
         if not posixpath.exists(download_location) or not posixpath.isdir(download_location):
@@ -34,12 +37,21 @@ class HostpointClient:
         file.close()
         return posixpath.join(download_location,posixpath.basename(remote_filename))
 
+    ## Downloads a list of files
+    # @param files The list of files to be downloaded
+    # @param download_location The path to where the files should be placed
+    # @returns A list of the paths to the local files just downloaded
     def download_files(self, files, download_location='./'):
         local_files = []
         for file in files:
             local_files.append(self.download_file(file, download_location))
         return local_files
 
+    ## As the name suggests
+    # @param name The name of the PLC in F00x Format
+    # @param date The datetime.date for the day to get the files for
+    # @param download_location String representing the folder to put the downloaded files in
+    # @returns A list of local files
     def download_files_for_plc_and_day(self, name, date, download_location='./'):
         local_files = []
         for file in self.list_files():
@@ -50,7 +62,6 @@ class HostpointClient:
 
     ## Upload a list of files from the local storage to the FTP server
     # @param filelist {list[string]} A list of paths to files on the local storage
-
     def upload_files(self, filelist):
         for file in filelist:
             self.upload_file(file)
@@ -113,8 +124,10 @@ class HostpointClient:
         d = datetime.strptime(parts[1], "%Y%m%d").date()
         return number, d
 
+    ## List out the .xls files in the remote directory
+    # @returns a list of file names representing the .xls files on the remote server
     def list_files(self):
-        return [f for f in self.client.nlst() if '.xls' in f]
+        return [f for f in self.client.nlst() if '.xls' in f]  # doing this is called a 'list comprehension'
 
 
 
