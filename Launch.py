@@ -33,7 +33,7 @@ class Main(QObject):
         super(Main, self).__init__()
         self.ui = None
         self.log_path = './log.txt'
-        loginInfo = open('login.csv').readlines()[1].strip().split(',')
+        loginInfo = open('login.csv').readlines()[0].strip().split(',')
         logging.basicConfig(filename=self.log_path, level=logging.INFO,
                             format='%(asctime)s: %(levelname)s : %(message)s')
         # TODO add a log file
