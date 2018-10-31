@@ -1,4 +1,4 @@
-class HeatPumpAnalysis:
+class HeatPumpReadout:
     dictionary = None
 
     def __init__(self, filename):
